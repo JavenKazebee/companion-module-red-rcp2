@@ -1,0 +1,19 @@
+{
+  "name": "companion-module-red-rcp2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Javen Kazebee",
+  "license": "ISC",
+  "dependencies": {
+    "@companion-module/base": "^1.10.0",
+    "red-rcp2": "file:../../red-rcp2",
+    "typescript": "^5.5.4"
+  },
+  "devDependencies": {
+    "@companion-module/tools": "^2.0.0"
+  }
+}
