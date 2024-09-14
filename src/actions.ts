@@ -1,21 +1,32 @@
 import ModuleInstance from "./index.js";
 
 export default function updateActions(self: ModuleInstance): void {
+    self.log('info', 'updateActions!!!');
+
     self.setActionDefinitions({
         set_iso: {
             name: 'Set ISO',
             options: [
                 {
-                    id: 'num',
-                    type: 'number',
+                    id: 'val',
+                    type: 'dropdown',
                     label: 'ISO',
-                    default: 320,
-                    min: 0,
-                    max: 65535
+                    default: '',
+                    choices: self.isoOptions,
                 },
             ],
             callback: async(event) => {
-                console.log('Setting ISO to ' + event.options.num);
+                self.log('info', 'Setting ISO to ' + event.options.num);
+            },
+            subscribe: () => {
+                self.camera?.getList("ISO");
+            }
+        },
+        get_types: {
+            name: 'Get Types',
+            options: [],
+            callback: async() => {
+                console.log("Types: " + self.camera?.types);
             }
         }
     });
