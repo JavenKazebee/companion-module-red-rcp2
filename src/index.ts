@@ -49,9 +49,7 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
         try {
             this.camera = await new Camera('Companion', this.config.ip).connect();
             this.camera.onMessage((data) => {
-                this.log('info', 'onMessage!!!');
                 this.messageHandler(data);
-                this.log('info', 'onMessage done!!!');
             });
             this.subscribeActions();
             this.updateStatus(InstanceStatus.Ok);
@@ -61,10 +59,8 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
         }
     }
     messageHandler(data: any) {
-        this.log('info', 'messageHandler!!!');
         switch(data.type) {
             case "rcp_cur_list":
-                this.log('info', 'rcp_cur_list!!!');
                 this.handleList(data);
                 break;
         }
@@ -73,9 +69,8 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
     handleList(data: List) {
         switch(data.id) {
             case "ISO":
-                this.log('info', 'ISO!!!');
+                this.isoOptions = [];
                 data.list.data.forEach((item) => {
-                    this.log('info', this.isoOptions.length.toString());
                     this.isoOptions.push({ id: item.num.toString(), label: item.num.toString() });
                 });
                 updateActions(this);

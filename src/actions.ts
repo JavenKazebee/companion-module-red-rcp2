@@ -12,11 +12,12 @@ export default function updateActions(self: ModuleInstance): void {
                     type: 'dropdown',
                     label: 'ISO',
                     default: '',
+                    minChoicesForSearch: 3,
                     choices: self.isoOptions,
                 },
             ],
             callback: async(event) => {
-                self.log('info', 'Setting ISO to ' + event.options.num);
+                self.camera?.set("ISO", parseInt(event.options.val?.toString() as string));
             },
             subscribe: () => {
                 self.camera?.getList("ISO");
