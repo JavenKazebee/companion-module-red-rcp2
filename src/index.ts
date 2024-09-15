@@ -8,6 +8,7 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
     config!: ModuleConfig;
     camera: Camera | null = null;
     isoOptions: DropdownChoice[] = [];
+    irisOptions: DropdownChoice[] = [];
 
     constructor(internal: unknown) {
         super(internal);
@@ -67,11 +68,19 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
     }
     
     handleList(data: List) {
+        // Update dropdown options
         switch(data.id) {
             case "ISO":
                 this.isoOptions = [];
                 data.list.data.forEach((item) => {
                     this.isoOptions.push({ id: item.num.toString(), label: item.num.toString() });
+                });
+                updateActions(this);
+                break;
+            case "APERTURE":
+                this.irisOptions = [];
+                data.list.data.forEach((item) => {
+                    this.irisOptions.push({ id: item.num.toString(), label: item.num.toString() });
                 });
                 updateActions(this);
                 break;
