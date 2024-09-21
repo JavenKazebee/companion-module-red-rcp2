@@ -1,8 +1,9 @@
 import { DropdownChoice, InstanceBase, InstanceStatus, runEntrypoint, SomeCompanionConfigField } from "@companion-module/base";
 import { configFields, ModuleConfig } from "./config.js";
 import updateActions from "./actions.js";
+import updateVariableDefinitions from "./variables.js";
 import { upgradeScripts } from "./upgrade.js"; 
-import { Camera, List } from "red-rcp2";
+import { Camera, List, Int } from "red-rcp2";
 
 export default class ModuleInstance extends InstanceBase<ModuleConfig> {
     config!: ModuleConfig;
@@ -20,6 +21,7 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
         this.attemptConnection();
 
         this.updateActions();
+        this.updateVariableDefinitions();
     }
 
     async destroy(): Promise<void> {
@@ -45,6 +47,10 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
         updateActions(this);
     }
 
+    updateVariableDefinitions(): void {
+        updateVariableDefinitions(this);
+    }
+
     async attemptConnection() {
         this.updateStatus(InstanceStatus.Connecting);
         try {
@@ -63,6 +69,9 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
         switch(data.type) {
             case "rcp_cur_list":
                 this.handleList(data);
+                break;
+            case "rcp_cur_int":
+                this.handleCurInt(data);
                 break;
         }
     }
@@ -83,6 +92,20 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
                     this.irisOptions.push({ id: item.num.toString(), label: item.num.toString() });
                 });
                 updateActions(this);
+                break;
+        }
+    }
+
+    handleCurInt(data: Int) {
+        switch(data.id) {
+            case "ISO":
+                this.setVariableValues({ 'iso': data.cur.val });
+                break;
+            case "APERTURE":
+                this.setVariableValues({ 'iris': data.cur.val });
+                break;
+            case "COLOR_TEMPERATURE":
+                this.setVariableValues({ 'white_balance': data.cur.val });
                 break;
         }
     }
