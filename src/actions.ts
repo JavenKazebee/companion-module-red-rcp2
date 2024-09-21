@@ -36,7 +36,8 @@ export default function updateActions(self: ModuleInstance): void {
                 },
             ],
             callback: async(event) => {
-                self.camera?.set("APERTURE", parseFloat(event.options.val?.toString() as string));
+                let num = parseFloat(event.options.val?.toString() as string) * 10;
+                self.camera?.set("APERTURE", num);
             },
             subscribe: () => {
                 self.camera?.getList("APERTURE");

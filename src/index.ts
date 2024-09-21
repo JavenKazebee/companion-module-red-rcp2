@@ -59,6 +59,7 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
                 this.messageHandler(data);
             });
             this.subscribeActions();
+            this.initalizeVariables();
             this.updateStatus(InstanceStatus.Ok);
         } catch (e) {
             this.updateStatus(InstanceStatus.ConnectionFailure);
@@ -89,7 +90,8 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
             case "APERTURE":
                 this.irisOptions = [];
                 data.list.data.forEach((item) => {
-                    this.irisOptions.push({ id: item.num.toString(), label: item.num.toString() });
+                    let num = item.num / 10;
+                    this.irisOptions.push({ id: num.toString(), label: num.toString() });
                 });
                 updateActions(this);
                 break;
@@ -102,12 +104,18 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
                 this.setVariableValues({ 'iso': data.cur.val });
                 break;
             case "APERTURE":
-                this.setVariableValues({ 'iris': data.cur.val });
+                this.setVariableValues({ 'iris': data.cur.val / data.edit_info.divider });
                 break;
             case "COLOR_TEMPERATURE":
                 this.setVariableValues({ 'white_balance': data.cur.val });
                 break;
         }
+    }
+
+    initalizeVariables() {
+        this.camera?.get("ISO");
+        this.camera?.get("APERTURE");
+        this.camera?.get("COLOR_TEMPERATURE");
     }
 }
 
