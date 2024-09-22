@@ -1,15 +1,15 @@
-import { DropdownChoice, InstanceBase, InstanceStatus, runEntrypoint, SomeCompanionConfigField } from "@companion-module/base";
+import { InstanceBase, InstanceStatus, runEntrypoint, SomeCompanionConfigField } from "@companion-module/base";
 import { configFields, ModuleConfig } from "./config.js";
 import updateActions from "./actions.js";
 import updateVariableDefinitions from "./variables.js";
 import { upgradeScripts } from "./upgrade.js"; 
-import { Camera, List, Int } from "red-rcp2";
+import { Camera, List, Int, Str } from "red-rcp2";
+import DropdownOptions from "./options.js";
 
 export default class ModuleInstance extends InstanceBase<ModuleConfig> {
     config!: ModuleConfig;
     camera: Camera | null = null;
-    isoOptions: DropdownChoice[] = [];
-    irisOptions: DropdownChoice[] = [];
+    options: DropdownOptions = new DropdownOptions();
 
     constructor(internal: unknown) {
         super(internal);
@@ -74,6 +74,9 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
             case "rcp_cur_int":
                 this.handleCurInt(data);
                 break;
+            case "rcp_cur_str":
+                this.handleCurStr(data);
+                break;
         }
     }
     
@@ -81,17 +84,40 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
         // Update dropdown options
         switch(data.id) {
             case "ISO":
-                this.isoOptions = [];
+                this.options.iso = [];
                 data.list.data.forEach((item) => {
-                    this.isoOptions.push({ id: item.num.toString(), label: item.num.toString() });
+                    this.options.iso.push({ id: item.num.toString(), label: item.num.toString() });
                 });
                 updateActions(this);
                 break;
             case "APERTURE":
-                this.irisOptions = [];
+                this.options.iris = [];
                 data.list.data.forEach((item) => {
                     let num = item.num / 10;
-                    this.irisOptions.push({ id: num.toString(), label: num.toString() });
+                    this.options.iris.push({ id: num.toString(), label: num.toString() });
+                });
+                updateActions(this);
+                break;
+            case "EXPOSURE_ANGLE":
+                this.options.shutter = [];
+                data.list.data.forEach((item) => {
+                    let num = item.num / 1000;
+                    this.options.shutter.push({ id: num.toString(), label: num.toString() });
+                });
+                updateActions(this);
+                break;
+            case "SENSOR_FRAME_RATE":
+                this.options.sensorFrameRate = [];
+                data.list.data.forEach((item) => {
+                    let num = item.num / 1000;
+                    this.options.sensorFrameRate.push({ id: num.toString(), label: num.toString() });
+                });
+                updateActions(this);
+                break;
+            case "RECORD_FORMAT":
+                this.options.sensorFormat = [];
+                data.list.data.forEach((item) => {
+                    this.options.sensorFormat.push({ id: item.num, label: item.str });
                 });
                 updateActions(this);
                 break;
@@ -109,13 +135,30 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
             case "COLOR_TEMPERATURE":
                 this.setVariableValues({ 'white_balance': data.cur.val });
                 break;
+            case "EXPOSURE_ANGLE":
+                this.setVariableValues({ 'shutter': data.cur.val / data.edit_info.divider });
+                break;
+        }
+    }
+
+    handleCurStr(data: Str) {
+        switch(data.id) {
+            case "RECORD_FORMAT":
+                this.setVariableValues({ 'sensor_format': data.display.str });
+                break;
+            case "SENSOR_FRAME_RATE":
+                this.setVariableValues({ 'sensor_frame_rate': parseFloat(data.display.abbr)});
+                break;
         }
     }
 
     initalizeVariables() {
         this.camera?.get("ISO");
-        this.camera?.get("APERTURE");
-        this.camera?.get("COLOR_TEMPERATURE");
+        this.camera?.get("APERTURE"); // Iris
+        this.camera?.get("COLOR_TEMPERATURE"); // White balance
+        this.camera?.get("EXPOSURE_ANGLE"); // Shutter angle
+        this.camera?.get("SENSOR_FRAME_RATE");
+        this.camera?.get("RECORD_FORMAT"); // Sensor format
     }
 }
 
