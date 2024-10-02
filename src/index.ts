@@ -10,6 +10,7 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
     config!: ModuleConfig;
     camera: Camera | null = null;
     options: DropdownOptions = new DropdownOptions();
+    reconnectTimer: NodeJS.Timeout | null = null;
 
     constructor(internal: unknown) {
         super(internal);
@@ -18,25 +19,41 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
     async init(config: ModuleConfig): Promise<void> { 
         this.config = config;
 
-        this.attemptConnection();
+        // If connection fails, periodically attempt to reconnect
+        if(!await this.attemptConnection()) {
+            this.reconnectUntilConnected();
+        }
 
+        // Initialize actions and variables
         this.updateActions();
         this.updateVariableDefinitions();
     }
 
     async destroy(): Promise<void> {
         this.camera = null;
+        clearTimeout(this.reconnectTimer as NodeJS.Timeout);
     }
 
     async configUpdated(config: ModuleConfig): Promise<void> {
-        // If the IP has changed, clear the camera and re-connect
+        // If the IP has changed, clear the camera, update the ip, and re-connect
         if(this.config.ip != config.ip) {
             this.camera = null;
-            this.config = config;
+            this.config.ip = config.ip;
             this.attemptConnection();
-        } else {
-            this.config = config;
         }
+
+        // If the reconnect rate has changed, clear the current reconnection attempt and start a new one
+        if(this.config.reconnectRate != config.reconnectRate) {
+            this.config.reconnectRate = config.reconnectRate;
+            if(this.reconnectTimer) {
+                clearTimeout(this.reconnectTimer as NodeJS.Timeout);
+                this.reconnectTimer = null;
+            }
+            this.reconnectUntilConnected();
+        }
+
+        // Update the config
+        this.config = config;
 	}
 
     getConfigFields(): SomeCompanionConfigField[] {
@@ -51,20 +68,46 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
         updateVariableDefinitions(this);
     }
 
-    async attemptConnection() {
-        this.updateStatus(InstanceStatus.Connecting);
-        try {
-            this.camera = await new Camera('Companion', this.config.ip).connect();
-            this.camera.onMessage((data) => {
-                this.messageHandler(data);
-            });
-            this.subscribeActions();
-            this.initalizeVariables();
-            this.updateStatus(InstanceStatus.Ok);
-        } catch (e) {
-            this.updateStatus(InstanceStatus.ConnectionFailure);
-            this.log('error', 'Camera connection failed');
-        }
+    async attemptConnection(): Promise<boolean> {
+        return new Promise(async (resolve, reject) => {
+            this.log('info', 'Attempting connection to ' + this.config.ip);
+            // If the ip field is empty, return
+            if(this.config.ip == "") {
+                reject();
+            }
+
+            this.updateStatus(InstanceStatus.Connecting);
+            try {
+                this.log('info', 'Trying to connect...');
+                this.camera = await new Camera('Companion', this.config.ip).connect();
+                this.log('info', 'Camera found!');
+                this.camera.onMessage((data) => {
+                    this.messageHandler(data);
+                });
+
+                this.camera.onClose(() => {
+                    this.updateStatus(InstanceStatus.Disconnected);
+                    this.camera = null;
+                    this.reconnectUntilConnected();
+                });
+
+                this.subscribeActions();
+                this.initalizeVariables();
+                this.updateStatus(InstanceStatus.Ok);
+                
+                resolve(true);
+            } catch (e: any) {
+                this.log('info', 'Connection failed: ' + e.message);
+                if(e.code == "EHOSTDOWN") {
+                    this.updateStatus(InstanceStatus.Disconnected);
+                } else {
+                    this.updateStatus(InstanceStatus.ConnectionFailure);
+                    this.log('error', 'Camera connection failed');
+                }
+                resolve(false);
+            }
+        });
+        
     }
     messageHandler(data: any) {
         switch(data.type) {
@@ -138,6 +181,9 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
             case "EXPOSURE_ANGLE":
                 this.setVariableValues({ 'shutter': data.cur.val / data.edit_info.divider });
                 break;
+            case "POWER_IN_ACTIVE":
+                let name = data.cur.val == 1 ? 'Battery' : 'DC';
+                this.setVariableValues({ 'active_power_source': name });
         }
     }
 
@@ -159,6 +205,21 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
         this.camera?.get("EXPOSURE_ANGLE"); // Shutter angle
         this.camera?.get("SENSOR_FRAME_RATE");
         this.camera?.get("RECORD_FORMAT"); // Sensor format
+        this.camera?.get("POWER_IN_ACTIVE"); // Active power source
+    }
+
+    async reconnectUntilConnected() {
+        this.log('info', 'Setting up reconnect timer.')
+        // Create interval
+        this.reconnectTimer = setInterval(async () => {
+            // Attempt to reconnect
+            if(await this.attemptConnection()) {
+                this.log('info', 'Reconnection successful.');
+                // If successful, clear interval
+                clearInterval(this.reconnectTimer as NodeJS.Timeout);
+                this.reconnectTimer = null;
+            }
+        }, 1000 * this.config.reconnectRate);
     }
 }
 
