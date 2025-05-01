@@ -1,8 +1,6 @@
 import ModuleInstance from "./index.js";
 
 export default function updateActions(self: ModuleInstance): void {
-    self.log('info', 'updateActions!!!');
-
     self.setActionDefinitions({
         set_iso: {
             name: 'Set ISO',
