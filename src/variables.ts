@@ -9,12 +9,10 @@ export default function updateVariableDefinitions(self: ModuleInstance): void {
 		{ variableId: 'sensor_frame_rate', name: 'Sensor Frame Rate' },
 		{ variableId: 'sensor_format', name: 'Sensor Format' },
 		{ variableId: 'active_power_source', name: 'Active Power Source' },
-
 		{ variableId: 'autofocus', name: 'Autofocus'},
 		{ variableId: 'autofocus_mode', name: 'Autofocus Mode'},
 		{ variableId: 'autofocus_position', name: 'Autofocus Position'},
 		{ variableId: 'autofocus_size', name: 'Autofocus Size'},
-		{ variableId: 'applied_camera_lut', name: 'Applied Camera LUT' },
 		{ variableId: 'audio_external_left_gain', name: 'Audio External Left Gain'},
 		{ variableId: 'audio_external_right_gain', name: 'Audio External Right Gain'},
 		{ variableId: 'audio_external_link_gain', name: 'Audio External Link Gain'},
@@ -25,10 +23,6 @@ export default function updateVariableDefinitions(self: ModuleInstance): void {
 		{ variableId: 'audio_internal_left_gain', name: 'Audio Internal Left Gain'},
 		{ variableId: 'audio_internal_right_gain', name: 'Audio Internal Right Gain'},
 		{ variableId: 'audio_internal_link_gain', name: 'Audio Internal Link Gain'},
-		{ variableId: 'audio_limiter_enable_ch3', name: 'Audio Limiter Enable CH3'},
-		{ variableId: 'audio_limiter_enable_ch4', name: 'Audio Limiter Enable CH4'},
-		{ variableId: 'audio_limiter_level_ch3', name: 'Audio Limiter Level CH3'},
-		{ variableId: 'audio_limiter_level_ch4', name: 'Audio Limiter Level CH4'},
 		{ variableId: 'audio_source', name: 'Audio Source'},
 		{ variableId: 'beep_enable', name: 'Beep Enable' },
 		{ variableId: 'beep_record_start', name: 'Beep Record Start' },
@@ -41,8 +35,6 @@ export default function updateVariableDefinitions(self: ModuleInstance): void {
 		{ variableId: 'camera_pin', name: 'Camera Pin' },
 		{ variableId: 'camera_runtime', name: 'Camera Runtime' },
 		{ variableId: 'camera_type', name: 'Camera Type' },
-		{ variableId: 'cartridge_name', name: 'Cartridge Name' },
-		{ variableId: 'cdl', name: 'CDL' },
 		{ variableId: 'cdl_enable', name: 'CDL Enable' },
 		{ variableId: 'clip_duration', name: 'Clip Duration' },
 		{ variableId: 'clip_name_2', name: 'Clip Name' },
@@ -58,15 +50,12 @@ export default function updateVariableDefinitions(self: ModuleInstance): void {
 		{ variableId: 'focus_dist_far', name: 'Focus Dist Far' },
 		{ variableId: 'focus_dist_mark', name: 'Focus Dist Mark' },
 		{ variableId: 'focus_dist_near', name: 'Focus Dist Near' },
-		{ variableId: 'file_system', name: 'File System' },
-		{ variableId: 'reel_number', name: 'Reel Number' },
 		{ variableId: 'frame_limit_enable', name: 'Frame Limit Enable' },
 		{ variableId: 'frame_limit_frames', name: 'Frame Limit Frames' },
 		{ variableId: 'frame_limit_playback_duration', name: 'Frame Limit Playback Duration' },
 		{ variableId: 'gain', name: 'Gain' },
 		{ variableId: 'genlock_state', name: 'Genlock State' },
 		{ variableId: 'headphone_volume', name: 'Headphone Volume' },
-		{ variableId: 'ieft_language_tag', name: 'IEFT Language Tag' },
 		{ variableId: 'language', name: 'Language' },
 		{ variableId: 'lens_brand', name: 'Lens Brand' },
 		{ variableId: 'lens_focal_length', name: 'Lens Focal Length' },
@@ -80,7 +69,6 @@ export default function updateVariableDefinitions(self: ModuleInstance): void {
 		{ variableId: 'media_approved_status', name: 'Media Approved Status' },
 		{ variableId: 'media_capacity', name: 'Media Capacity' },
 		{ variableId: 'media_clip_count', name: 'Media Clip Count' },
-		{ variableId: 'clip_info', name: 'Media Clip Info'},
 		{ variableId: 'media_firmware_version', name: 'Media Firmware Version' },
 		{ variableId: 'media_model_number', name: 'Media Model Number' },
 		{ variableId: 'media_name', name: 'Media Name' },
@@ -123,9 +111,5 @@ export default function updateVariableDefinitions(self: ModuleInstance): void {
 		{ variableId: 'wifi_mac_address', name: 'Wifi MAC Address' },
 		{ variableId: 'wifi_mode', name: 'Wifi Mode' },
 		{ variableId: 'wifi_status', name: 'Wifi Status' },
-
-		// TODO
-		// Battery percentages
-		// Slate info
 	])
 }
