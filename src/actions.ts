@@ -115,5 +115,109 @@ export default function updateActions(self: ModuleInstance): void {
                 self.camera?.getList("RECORD_FORMAT");
             },
         },
+        set_camera_lut: {
+            name: 'Set Camera LUT',
+            options: [
+                {
+                    id: 'val',
+                    type: 'dropdown',
+                    label: 'Camera LUT',
+                    default: '',
+                    minChoicesForSearch: 3,
+                    choices: self.options.cameraLuts,
+                }
+            ],
+            callback: async(event) => {
+                self.camera?.set("CAMERA_LUT", event.options.val as number);
+            },
+            subscribe: () => {
+                self.camera?.getList("CAMERA_LUT");
+            }
+        },
+        set_camera_lut_sdi_1: {
+            name: 'Set Camera LUT (SDI 1)',
+            options: [
+                {
+                    id: 'val',
+                    type: 'dropdown',
+                    label: 'Camera LUT',
+                    default: '',
+                    minChoicesForSearch: 3,
+                    choices: self.options.cameraLuts,
+                }
+            ],
+            callback: async(event) => {
+                self.camera?.set("CAMERA_LUT_SDI_1", event.options.val as number);
+            },
+            subscribe: () => {
+                self.camera?.getList("CAMERA_LUT_SDI_1");
+            }
+        },
+        camera_lut_enable: {
+            name: 'Camera LUT Enable',
+            options: [
+                {
+                    id: 'val',
+                    type: 'dropdown',
+                    label: 'Action',
+                    default: 'Toggle',
+                    minChoicesForSearch: 3,
+                    choices: self.options.enableDisableToggle,
+                }
+            ],
+            callback: async(event) => {
+                switch(event.options.val) {
+                    case 'enable':
+                        self.camera?.set("CAMERA_LUT_ENABLE", 1);
+                        break;
+                    case 'disable':
+                        self.camera?.set("CAMERA_LUT_ENABLE", 0);
+                        break;
+                    case 'toggle':
+                        if(self.getVariableValue('CAMERA_LUT_ENABLE') == 'On') {
+                            self.camera?.set("CAMERA_LUT_ENABLE", 0);
+                        } else {
+                            self.camera?.set("CAMERA_LUT_ENABLE", 1);
+                        }
+                        break;
+                }
+            },
+            subscribe: () => {
+                self.camera?.getList("CAMERA_LUT_ENABLE");
+            }
+        },
+        camera_lut_enable_sdi_1: {
+            name: 'Camera LUT Enable (SDI 1)',
+            options: [
+                {
+                    id: 'val',
+                    type: 'dropdown',
+                    label: 'Action',
+                    default: 'Toggle',
+                    minChoicesForSearch: 3,
+                    choices: self.options.enableDisableToggle,
+                }
+            ],
+            callback: async(event) => {
+                switch(event.options.val) {
+                    case 'enable':
+                        self.camera?.set("CAMERA_LUT_ENABLE_SDI_1", 1);
+                        break;
+                    case 'disable':
+                        self.camera?.set("CAMERA_LUT_ENABLE_SDI_1", 0);
+                        break;
+                    case 'toggle':
+                        if(self.getVariableValue('CAMERA_LUT_ENABLE_SDI_1') == 'On') {
+                            self.camera?.set("CAMERA_LUT_ENABLE_SDI_1", 0);
+                        } else {
+                            self.camera?.set("CAMERA_LUT_ENABLE_SDI_1", 1);
+                        }
+                        break;
+                }
+            },
+            subscribe: () => {
+                self.camera?.getList("CAMERA_LUT_ENABLE_SDI_1");
+            }
+        }
     });
 }

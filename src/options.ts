@@ -6,4 +6,8 @@ export default class DropdownOptions {
     shutter: DropdownChoice[] = [];
     sensorFrameRate: DropdownChoice[] = [];
     sensorFormat: DropdownChoice[] = [];
+    cameraLuts: DropdownChoice[] = [];
+    enableDisableToggle: DropdownChoice[] = [{id: 'enable', label: 'Enable'}, 
+                                            {id: 'disable', label: 'Disable'}, 
+                                            {id: 'toggle', label: 'Toggle'}];
 }
