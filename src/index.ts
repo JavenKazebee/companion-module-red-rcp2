@@ -162,7 +162,21 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
             case "RECORD_FORMAT":
                 this.options.sensorFormat = [];
                 data.list.data.forEach((item) => {
-                    this.options.sensorFormat.push({ id: item.num!, label: item.str! });
+                    this.options.sensorFormat.push({ id: item.num!.toString(), label: item.str! });
+                });
+                updateActions(this);
+                break;
+            case "CAMERA_PRESET_LIST":
+                this.options.presets = [];
+                data.list.data.forEach((item) => {
+                    this.options.presets.push({ id: item.num!.toString(), label: item.str! });
+                });
+                updateActions(this);
+                break;
+            case "COLOR_SPACE":
+                this.options.colorSpace = [];
+                data.list.data.forEach((item) => {
+                    this.options.colorSpace.push({ id: item.num!.toString(), label: item.str! });
                 });
                 updateActions(this);
                 break;

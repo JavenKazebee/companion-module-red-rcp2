@@ -218,6 +218,51 @@ export default function updateActions(self: ModuleInstance): void {
             subscribe: () => {
                 self.camera?.getList("CAMERA_LUT_ENABLE_SDI_1");
             }
+        },
+        media_format: {
+            name: 'Media Format',
+            options: [], // Options are required even if empty for some reason
+            callback: async(_) => {
+                self.camera?.set("MEDIA_FORMAT", 1); // Normal format
+            }
+        },
+        camera_preset_apply: {
+            name: 'Camera Preset Apply',
+            options: [
+                {
+                    id: 'val',
+                    type: 'dropdown',
+                    label: 'Preset',
+                    default: '',
+                    minChoicesForSearch: 3,
+                    choices: self.options.presets,
+                }
+            ],
+            callback: async(_) => {
+                self.camera?.set("CAMERA_PRESET_APPLY");
+            },
+            subscribe: () => {
+                self.camera?.getList("CAMERA_PRESET_LIST");
+            }
+        },
+        color_space: {
+            name: 'Color Space',
+            options: [
+                {
+                    id: 'val',
+                    type: 'dropdown',
+                    label: 'Color Space',
+                    default: '',
+                    minChoicesForSearch: 3,
+                    choices: self.options.colorSpace,
+                }
+            ],
+            callback: async(event) => {
+                self.camera?.set("COLOR_SPACE", event.options.val as number);
+            },
+            subscribe: () => {
+                self.camera?.getList("COLOR_SPACE");
+            }
         }
     });
 }
