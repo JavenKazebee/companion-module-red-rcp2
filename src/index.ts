@@ -180,10 +180,18 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
                 });
                 updateActions(this);
                 break;
+            case "CAMERA_LUT":
+                this.options.cameraLuts = [];
+                data.list.data.forEach((item) => {
+                    this.options.cameraLuts.push({ id: item.str!, label: item.str! });
+                });
+                updateActions(this);
+                break;
         }
     }
 
-    handleCurInt(data: Types.CurInt) {        
+    handleCurInt(data: Types.CurInt) {
+        // Update variables        
         switch(data.id) {
             case "ISO":
                 this.setVariableValues({ 'iso': data.cur.val });
@@ -246,6 +254,7 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
     }
 
     handleCurStr(data: CurStr) {
+        // Update variables
         switch(data.id) {
             case "RECORD_FORMAT":
                 this.setVariableValues({ 'sensor_format': data.display.str });

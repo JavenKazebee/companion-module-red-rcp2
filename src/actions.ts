@@ -128,29 +128,10 @@ export default function updateActions(self: ModuleInstance): void {
                 }
             ],
             callback: async(event) => {
-                self.camera?.set("CAMERA_LUT", event.options.val as number);
+                self.camera?.set("CAMERA_LUT", event.options.val as string);
             },
             subscribe: () => {
                 self.camera?.getList("CAMERA_LUT");
-            }
-        },
-        set_camera_lut_sdi_1: {
-            name: 'Set Camera LUT (SDI 1)',
-            options: [
-                {
-                    id: 'val',
-                    type: 'dropdown',
-                    label: 'Camera LUT',
-                    default: '',
-                    minChoicesForSearch: 3,
-                    choices: self.options.cameraLuts,
-                }
-            ],
-            callback: async(event) => {
-                self.camera?.set("CAMERA_LUT_SDI_1", event.options.val as number);
-            },
-            subscribe: () => {
-                self.camera?.getList("CAMERA_LUT_SDI_1");
             }
         },
         camera_lut_enable: {
@@ -160,7 +141,7 @@ export default function updateActions(self: ModuleInstance): void {
                     id: 'val',
                     type: 'dropdown',
                     label: 'Action',
-                    default: 'Toggle',
+                    default: 'toggle',
                     minChoicesForSearch: 3,
                     choices: self.options.enableDisableToggle,
                 }
