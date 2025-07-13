@@ -155,7 +155,7 @@ export default function updateActions(self: ModuleInstance): void {
                         self.camera?.set("CAMERA_LUT_ENABLE", 0);
                         break;
                     case 'toggle':
-                        if(self.getVariableValue('CAMERA_LUT_ENABLE') == 'On') {
+                        if(self.getVariableValue('camera_lut_enable') == 'On') {
                             self.camera?.set("CAMERA_LUT_ENABLE", 0);
                         } else {
                             self.camera?.set("CAMERA_LUT_ENABLE", 1);
