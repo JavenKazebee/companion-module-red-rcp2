@@ -12,4 +12,6 @@ export default class DropdownOptions {
     enableDisableToggle: DropdownChoice[] = [{id: 'enable', label: 'Enable'}, 
                                             {id: 'disable', label: 'Disable'}, 
                                             {id: 'toggle', label: 'Toggle'}];
+    incrementDecrement: DropdownChoice[] = [{id: 'increment', label: 'Increment'}, 
+                                            {id: 'decrement', label: 'Decrement'}];
 }

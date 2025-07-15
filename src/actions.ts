@@ -21,6 +21,31 @@ export default function updateActions(self: ModuleInstance): void {
                 self.camera?.getList("ISO");
             }
         },
+        adjust_iso: {
+            name: 'Adjust ISO',
+            options: [
+                {
+                    id: 'val',
+                    type: 'dropdown',
+                    label: 'ISO',
+                    default: 'increment',
+                    choices: self.options.incrementDecrement,
+                },
+            ],
+            callback: async(event) => {
+                const currentIndex = self.options.iso.findIndex((item) => item.id as number == self.getVariableValue('iso') as number);
+                // To increment, we have to not go over the last item
+                if(event.options.val === 'increment' && currentIndex < self.options.iso.length - 1) {
+                    self.camera?.set("ISO", self.options.iso[currentIndex + 1].id as number);
+                } else if(event.options.val === 'decrement' && currentIndex > 0) {
+                    self.log('info', 'decrementing');
+                    self.camera?.set("ISO", self.options.iso[currentIndex - 1].id as number);
+                }
+            },
+            subscribe: () => {
+                self.camera?.getList("ISO");
+            }
+        },
         set_iris: {
             name: 'Set Iris',
             options: [
@@ -35,7 +60,36 @@ export default function updateActions(self: ModuleInstance): void {
             ],
             callback: async(event) => {
                 let num = event.options.val as number;
-                self.camera?.set("APERTURE", num);
+                self.camera?.set("APERTURE", num * 10);
+            },
+            subscribe: () => {
+                self.camera?.getList("APERTURE");
+            }
+        },
+        adjust_iris: {
+            name: 'Adjust Iris',
+            options: [
+                {
+                    id: 'val',
+                    type: 'dropdown',
+                    label: 'Iris',
+                    default: 'increment',
+                    choices: self.options.incrementDecrement,
+                },
+            ],
+            callback: async(event) => {
+                const currentIndex = self.options.iris.findIndex((item) => item.id as number == self.getVariableValue('iris') as number);
+                self.log('info', self.options.iris.map((item) => item.id).toString());
+                // To increment, we have to not go over the last item
+                if(event.options.val === 'increment' && currentIndex < self.options.iris.length - 1) {
+                    self.log('info', 'incrementing');
+                    self.log('info', `Current Index: ${currentIndex}`);
+                    self.log('info', `Current Value: ${self.options.iris[currentIndex].id}`);
+                    self.log('info', `Next Value: ${self.options.iris[currentIndex + 1].id}`);
+                    self.camera?.set("APERTURE", self.options.iris[currentIndex + 1].id as number * 10);
+                } else if(event.options.val === 'decrement' && currentIndex > 0) {
+                    self.camera?.set("APERTURE", self.options.iris[currentIndex - 1].id as number * 10);
+                }
             },
             subscribe: () => {
                 self.camera?.getList("APERTURE");
@@ -165,39 +219,6 @@ export default function updateActions(self: ModuleInstance): void {
             },
             subscribe: () => {
                 self.camera?.getList("CAMERA_LUT_ENABLE");
-            }
-        },
-        camera_lut_enable_sdi_1: {
-            name: 'Camera LUT Enable (SDI 1)',
-            options: [
-                {
-                    id: 'val',
-                    type: 'dropdown',
-                    label: 'Action',
-                    default: 'Toggle',
-                    minChoicesForSearch: 3,
-                    choices: self.options.enableDisableToggle,
-                }
-            ],
-            callback: async(event) => {
-                switch(event.options.val) {
-                    case 'enable':
-                        self.camera?.set("CAMERA_LUT_ENABLE_SDI_1", 1);
-                        break;
-                    case 'disable':
-                        self.camera?.set("CAMERA_LUT_ENABLE_SDI_1", 0);
-                        break;
-                    case 'toggle':
-                        if(self.getVariableValue('CAMERA_LUT_ENABLE_SDI_1') == 'On') {
-                            self.camera?.set("CAMERA_LUT_ENABLE_SDI_1", 0);
-                        } else {
-                            self.camera?.set("CAMERA_LUT_ENABLE_SDI_1", 1);
-                        }
-                        break;
-                }
-            },
-            subscribe: () => {
-                self.camera?.getList("CAMERA_LUT_ENABLE_SDI_1");
             }
         },
         media_format: {
