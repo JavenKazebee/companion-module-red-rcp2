@@ -70,11 +70,13 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
     }
 
     async attemptConnection(): Promise<boolean> {
-        return new Promise(async (resolve, reject) => {
+        return new Promise(async (resolve) => {
             this.log('info', 'Attempting connection to ' + this.config.ip);
             // If the ip field is empty, return
-            if(this.config.ip == "") {
-                reject();
+            if(this.config.ip == "") {  
+                this.log('info', 'IP field empty.')
+                resolve(false);
+                return;
             }
 
             this.updateStatus(InstanceStatus.Connecting);
