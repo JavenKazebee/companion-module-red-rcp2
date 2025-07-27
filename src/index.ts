@@ -214,19 +214,19 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
                 this.setVariableValues({ 'audio_internal_link_gain': data.cur.val ? 'On' : 'Off' });
                 break;
             case "CAMERA_LUT_ENABLE":
-                this.setVariableValues({ 'camera_lut_enable': data.cur.val ? 'On' : 'Off' });
+                this.setVariableValues({ 'camera_lut_enable': data.cur.val ? 'Enabled' : 'Disabled' });
                 break;
             case "EXPOSURE_ADJUST":
                 this.setVariableValues({ 'exposure_adjust': data.cur.val });
                 break;
             case "FACE_DETECTION_ENABLE":
-                this.setVariableValues({ 'face_detection_enable': data.cur.val ? 'On' : 'Off' });
+                this.setVariableValues({ 'face_detection_enable': data.cur.val ? 'Enabled' : 'Disabled' });
                 break;
             case "FALSE_COLOR_ENABLE":
-                this.setVariableValues({ 'false_color_enable': data.cur.val ? 'On' : 'Off' });
+                this.setVariableValues({ 'false_color_enable': data.cur.val ? 'Enabled' : 'Disabled' });
                 break;
             case "FRAME_LIMIT_ENABLE":
-                this.setVariableValues({ 'frame_limit_enable': data.cur.val ? 'On' : 'Off' });
+                this.setVariableValues({ 'frame_limit_enable': data.cur.val ? 'Enabled' : 'Disabled' });
                 break;
             case "FRAME_LIMIT_FRAMES":
                 this.setVariableValues({ 'frame_limit_frames': data.cur.val });
@@ -235,7 +235,7 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
                 this.setVariableValues({ 'headphone_volume': data.cur.val });
                 break;
             case "LOG_VIEW_ENABLE":
-                this.setVariableValues({ 'log_view_enable': data.cur.val ? 'On' : 'Off' });
+                this.setVariableValues({ 'log_view_enable': data.cur.val ? 'Enabled' : 'Disabled' });
                 break;
             case "MEDIA_APPROVED_STATUS":
                 this.setVariableValues({ 'media_approved_status': data.cur.val ? 'Approved' : 'Unnapproved' });
