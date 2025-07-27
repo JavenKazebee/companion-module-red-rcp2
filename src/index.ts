@@ -366,8 +366,8 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
             case "FOCUS_DIST_NEAR":
                 this.setVariableValues({ 'focus_dist_near': data.display.str });
                 break;
-            case "FOCUST_DIST_MARK":
-                this.setVariableValues({ 'focust_dist_mark': data.display.str });
+            case "FOCUS_DIST_MARK":
+                this.setVariableValues({ 'focus_dist_mark': data.display.str });
                 break;
             case "FRAME_LIMIT_PLAYBACK_DURATION":
                 this.setVariableValues({ 'frame_limit_playback_duration': data.display.str });
@@ -534,15 +534,14 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
     initalizeVariables() {
         const vars = [
             "ISO", "APERTURE", "COLOR_TEMPERATURE", "EXPOSURE_ANGLE", "SENSOR_FRAME_RATE", "RECORD_FORMAT",
-            "POWER_IN_ACTIVE", "AF_ENABLE", "AF_MODE", "AF_POSITION", "AF_SIZE", "APPLIED_CAMERA_LUT", "AUDIO_EXTERNAL_LEFT_GAIN",
+            "POWER_IN_ACTIVE", "AF_ENABLE", "AF_MODE", "AF_POSITION", "AF_SIZE", "AUDIO_EXTERNAL_LEFT_GAIN",
             "AUDIO_EXTERNAL_RIGHT_GAIN", "AUDIO_EXTERNAL_LINK_GAIN", "AUDIO_HEADPHONE_MUTE", "AUDIO_HEADPHONE_SOURCE",
             "AUDIO_INPUT_TYPE_CH3", "AUDIO_INPUT_TYPE_CH4", "AUDIO_INTERNAL_LEFT_GAIN", "AUDIO_INTERNAL_RIGHT_GAIN",
-            "AUDIO_INTERNAL_LINK_GAIN", "AUDIO_LIMITER_ENABLE_CH3", "AUDIO_LIMITER_ENABLE_CH4", "AUDIO_LIMITER_LEVEL_CH3",
-            "AUDIO_LIMITER_LEVEL_CH4", "AUDIO_SOURCE", "BEEP_ENABLE", "BEEP_RECORD_START", "BEEP_RECORD_STOP", "CAMERA_FIRMWARE_VERSION",
+            "AUDIO_INTERNAL_LINK_GAIN", "AUDIO_SOURCE", "BEEP_ENABLE", "BEEP_RECORD_START", "BEEP_RECORD_STOP", "CAMERA_FIRMWARE_VERSION",
             "CAMERA_HEALTH", "CAMERA_ID", "CAMERA_LUT", "CAMERA_LUT_ENABLE", "CAMERA_PIN", "CAMERA_RUNTIME", "CAMERA_TYPE",
-            "CARTRIDGE_NAME", "CDL", "CDL_ENABLE", "CLIP_DURATION", "CLIP_NAME_2", "COLOR_SPACE", "DATE", "EXPOSURE_ADJUST",
+            "CDL_ENABLE", "CLIP_DURATION", "CLIP_NAME_2", "COLOR_SPACE", "DATE", "EXPOSURE_ADJUST",
             "FACE_DETECTION_ENABLE", "FACE_DETECTION_FALLBACK", "FACE_DETECTION_PRIORITY", "FALSE_COLOR_ENABLE", "FALSE_COLOR_MODE",
-            "FAN_MODE", "FOCUST_DIST_FAR", "FOCUST_DIST_NEAR", "FOCUST_DIST_MARK", "FILE_SYSTEM", "FRAME_LIMIT_ENABLE", 
+            "FAN_MODE", "FOCUS_DIST_FAR", "FOCUS_DIST_NEAR", "FOCUS_DIST_MARK", "FRAME_LIMIT_ENABLE", 
             "FRAME_LIMIT_FRAMES", "FRAME_LIMIT_PLAYBACK_DURATION", "GAIN", "GENLOCK_STATE", "HEADPHONE_VOLUME",
             "LANGUAGE", "LENS_BRAND", "LENS_FOCAL_LENGTH", "LENS_FOCUS_DISTANCE", "LENS_HYPERFOCAL_DISTANCE", "LENS_IS_STATUS", 
             "LENS_META_NAME", "LENS_OWNER", "LENS_SERIAL_NUMBER", "LOG_VIEW_ENABLE", "MEDIA_APPROVED_STATUS", "MEDIA_CAPACITY", 
