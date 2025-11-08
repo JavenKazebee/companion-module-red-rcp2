@@ -5,7 +5,6 @@ import updateVariableDefinitions from "./variables.js";
 import { upgradeScripts } from "./upgrade.js"; 
 import { Camera, Types } from "red-rcp2";
 import DropdownOptions from "./options.js";
-import { CurStr } from "red-rcp2/lib/types.js";
 
 export default class ModuleInstance extends InstanceBase<ModuleConfig> {
     config!: ModuleConfig;
@@ -124,6 +123,9 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
             case "rcp_cur_str":
                 this.handleCurStr(data);
                 break;
+            case "rcp_cur_cdl":
+                this.handleCurCDL(data);
+                break;
         }
     }
     
@@ -133,52 +135,56 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
             case "ISO":
                 this.options.iso = [];
                 data.list.data.forEach((item) => {
-                    this.options.iso.push({ id: item.num!.toString(), label: item.num!.toString() });
+                    this.options.iso.push({ id: item.num!, label: item.str! });
                 });
                 updateActions(this);
                 break;
             case "APERTURE":
-                this.options.iris = [];
+                this.options.aperture = [];
                 data.list.data.forEach((item) => {
-                    let num = item.num! / 10;
-                    this.options.iris.push({ id: num.toString(), label: num.toString() });
+                    this.options.aperture.push({ id: item.num!, label: item.str! });
+                });
+                updateActions(this);
+                break;
+            case "COLOR_TEMPERATURE":
+                this.options.colorTemperature = [];
+                data.list.data.forEach((item) => {
+                    this.options.colorTemperature.push({ id: item.num!, label: item.str! });
                 });
                 updateActions(this);
                 break;
             case "EXPOSURE_ANGLE":
                 this.options.shutter = [];
                 data.list.data.forEach((item) => {
-                    let num = item.num! / 1000;
-                    this.options.shutter.push({ id: num.toString(), label: num.toString() });
+                    this.options.shutter.push({ id: item.num!, label: item.str! });
                 });
                 updateActions(this);
                 break;
             case "SENSOR_FRAME_RATE":
                 this.options.sensorFrameRate = [];
                 data.list.data.forEach((item) => {
-                    let num = item.num! / 1000;
-                    this.options.sensorFrameRate.push({ id: num.toString(), label: num.toString() });
+                    this.options.sensorFrameRate.push({ id: item.num!, label: item.str! });
                 });
                 updateActions(this);
                 break;
             case "RECORD_FORMAT":
                 this.options.sensorFormat = [];
                 data.list.data.forEach((item) => {
-                    this.options.sensorFormat.push({ id: item.num!.toString(), label: item.str! });
+                    this.options.sensorFormat.push({ id: item.num!, label: item.str! });
                 });
                 updateActions(this);
                 break;
             case "CAMERA_PRESET_LIST":
                 this.options.presets = [];
                 data.list.data.forEach((item) => {
-                    this.options.presets.push({ id: item.num!.toString(), label: item.str! });
+                    this.options.presets.push({ id: item.str!, label: item.str! });
                 });
                 updateActions(this);
                 break;
             case "COLOR_SPACE":
                 this.options.colorSpace = [];
                 data.list.data.forEach((item) => {
-                    this.options.colorSpace.push({ id: item.num!.toString(), label: item.str! });
+                    this.options.colorSpace.push({ id: item.num!, label: item.str! });
                 });
                 updateActions(this);
                 break;
@@ -198,14 +204,8 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
             case "ISO":
                 this.setVariableValues({ 'iso': data.cur.val });
                 break;
-            case "APERTURE":
-                this.setVariableValues({ 'iris': data.cur.val / data.edit_info.divider });
-                break;
             case "COLOR_TEMPERATURE":
                 this.setVariableValues({ 'white_balance': data.cur.val });
-                break;
-            case "EXPOSURE_ANGLE":
-                this.setVariableValues({ 'shutter': data.cur.val / data.edit_info.divider });
                 break;
             case "AUDIO_EXTERNAL_LINK_GAIN":
                 this.setVariableValues({ 'audio_external_link_gain': data.cur.val ? 'On' : 'Off' });
@@ -249,20 +249,44 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
             case "PROJECT_FRAME_RATE":
                 this.setVariableValues({ 'project_frame_rate': data.cur.val });
                 break;
-            case "SENSOR_FRAME_RATE":
-                this.setVariableValues({ 'sensor_frame_rate': data.cur.val });
+            case "POWER_IN_ACTIVE":
+                this.setVariableValues({ 'active_power_source': data.cur.val ? "BAT" : "DC" });
+                break;
+            case "POWER_OUT_ENABLE":
+                this.setVariableValues({ 'power_out_enable': data.cur.val ? 'Enabled' : 'Disabled' });
+                break;
+            case "RCP_VERSION":
+                this.setVariableValues({ 'rcp_version': data.cur.val });
+                break;
+            case "RECORD_STATE":
+                this.setVariableValues({ 'record_state': {
+                    0: 'Not Recording',
+                    1: 'Recording',
+                    2: 'Finalizing',
+                    3: 'Pre Recording',
+                    4: 'Encoding'
+                }[data.cur.val] });
+                break;
+            case "SENSOR_FLIP_MIRROR":
+                this.setVariableValues({ 'sensor_flip_mirror': data.cur.val ? 'Enabled' : 'Disabled' });
+                break;
+            case "TALLY_LED_ENABLE":
+                this.setVariableValues({ 'tally_led_enable': data.cur.val ? 'Enabled' : 'Disabled' });
+                break;
+            case "APERTURE_CONTROL":
+                this.setVariableValues({ 'aperture_control': data.cur.val ? 'Supported' : 'Not Supported' });
                 break;
         }
     }
 
-    handleCurStr(data: CurStr) {
+    handleCurStr(data: Types.CurStr) {
         // Update variables
         switch(data.id) {
-            case "RECORD_FORMAT":
-                this.setVariableValues({ 'sensor_format': data.display.str });
+            case "APERTURE":
+                this.setVariableValues({ 'aperture': data.display.str });
                 break;
             case "SENSOR_FRAME_RATE":
-                this.setVariableValues({ 'sensor_frame_rate': parseFloat(data.display.abbr)});
+                this.setVariableValues({ 'sensor_frame_rate': data.display.str});
                 break;
             case "CAMERA_FIRMWARE_VERSION":
                 this.setVariableValues({ 'camera_firmware_version': data.display.str });
@@ -274,13 +298,10 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
                 this.setVariableValues({ 'camera_lut': data.display.str });
                 break;
             case "AF_MODE":
-                this.setVariableValues({ 'autofocus_mode': data.display.str });
+                this.setVariableValues({ 'af_mode': data.display.str });
                 break;
             case "AF_POSITION":
-                this.setVariableValues({ 'autofocus_position': data.display.str });
-                break;
-            case "AF_SIZE":
-                this.setVariableValues({ 'af_size': data.display.str });
+                this.setVariableValues({ 'af_position': data.display.str });
                 break;
             case "AUDIO_HEADPHONE_MUTE":
                 this.setVariableValues({ 'audio_headphone_mute': data.display.str });
@@ -289,7 +310,7 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
                 this.setVariableValues({ 'audio_source': data.display.str });
                 break;
             case "AF_ENABLE":
-                this.setVariableValues({ 'autofocus': data.display.str });
+                this.setVariableValues({ 'af': data.display.str });
                 break;
             case "AUDIO_HEADPHONE_SOURCE":
                 this.setVariableValues({ 'audio_headphone_source': data.display.str });
@@ -320,9 +341,6 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
                 break;
             case "BEEP_RECORD_STOP":
                 this.setVariableValues({ 'beep_record_stop': data.display.str });
-                break;
-            case "CAMERA_HEALTH":
-                this.setVariableValues({ 'camera_health': data.display.str });
                 break;
             case "CAMERA_PIN":
                 this.setVariableValues({ 'camera_pin': data.display.str });
@@ -450,12 +468,6 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
             case "PLAYBACK_STATE":
                 this.setVariableValues({ 'playback_state': data.display.str });
                 break;
-            case "POWER_IN_ACTIVE":
-                this.setVariableValues({ 'active_power_source': data.display.str });
-                break;
-            case "POWER_OUT_ENABLE":
-                this.setVariableValues({ 'power_out_enable': data.display.str });
-                break;
             case "PRORES_BAKED_IN_SETTINGS":
                 this.setVariableValues({ 'prores_baked_in_settings': data.display.str });
                 break;
@@ -468,9 +480,6 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
             case "R3D_QUALITY":
                 this.setVariableValues({ 'r3d_quality': data.display.str });
                 break;
-            case "RCP_VERSION":
-                this.setVariableValues({ 'rcp_version': data.display.str });
-                break;
             case "RECORD_CODEC":
                 this.setVariableValues({ 'record_codec': data.display.str });
                 break;
@@ -479,9 +488,6 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
                 break;
             case "RECORD_MODE":
                 this.setVariableValues({ 'record_mode': data.display.str });
-                break;
-            case "RECORD_STATE":
-                this.setVariableValues({ 'record_state': data.display.str });
                 break;
             case "RF_IRIS_COMPENSATION_ENABLE":
                 this.setVariableValues({ 'rf_iris_compensation_enable': data.display.str });
@@ -497,12 +503,6 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
                 break;
             case "SDI_COLOR_SETTING":
                 this.setVariableValues({ 'sdi_color_setting': data.display.str });
-                break;
-            case "SENSOR_FLIP_MIRROR":
-                this.setVariableValues({ 'sensor_flip_mirror': data.display.str });
-                break;
-            case "TALLY_LED_ENABLE":
-                this.setVariableValues({ 'tally_led_enable': data.display.str });
                 break;
             case "TIME":
                 this.setVariableValues({ 'time': data.display.str });
@@ -528,17 +528,41 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
             case "WIFI_STATUS":
                 this.setVariableValues({ 'wifi_status': data.display.str });
                 break;
+            case "EXPOSURE_ANGLE":
+                this.setVariableValues({ 'shutter': data.display.str });
+                break;
+            case "AF_SIZE":
+                this.setVariableValues({ 'af_size': data.display.str });
+                break;
         }
+    }
+
+    handleCurCDL(data: Types.CurCdl) {
+        this.setVariableValues({
+            'cdl_power_r': data.power.r,
+            'cdl_power_g': data.power.g,
+            'cdl_power_b': data.power.b,
+
+            'cdl_slope_r': data.slope.r,
+            'cdl_slope_g': data.slope.g,
+            'cdl_slope_b': data.slope.b,
+
+            'cdl_offset_r': data.offset.r,
+            'cdl_offset_g': data.offset.g,
+            'cdl_offset_b': data.offset.b,
+
+            'cdl_saturation': data.saturation
+        });
     }
 
     initalizeVariables() {
         const vars = [
-            "ISO", "APERTURE", "COLOR_TEMPERATURE", "EXPOSURE_ANGLE", "SENSOR_FRAME_RATE", "RECORD_FORMAT",
+            "ISO", "APERTURE", "APERTURE_CONTROL", "COLOR_TEMPERATURE", "EXPOSURE_ANGLE", "SENSOR_FRAME_RATE", "RECORD_FORMAT",
             "POWER_IN_ACTIVE", "AF_ENABLE", "AF_MODE", "AF_POSITION", "AF_SIZE", "AUDIO_EXTERNAL_LEFT_GAIN",
             "AUDIO_EXTERNAL_RIGHT_GAIN", "AUDIO_EXTERNAL_LINK_GAIN", "AUDIO_HEADPHONE_MUTE", "AUDIO_HEADPHONE_SOURCE",
             "AUDIO_INPUT_TYPE_CH3", "AUDIO_INPUT_TYPE_CH4", "AUDIO_INTERNAL_LEFT_GAIN", "AUDIO_INTERNAL_RIGHT_GAIN",
             "AUDIO_INTERNAL_LINK_GAIN", "AUDIO_SOURCE", "BEEP_ENABLE", "BEEP_RECORD_START", "BEEP_RECORD_STOP", "CAMERA_FIRMWARE_VERSION",
-            "CAMERA_HEALTH", "CAMERA_ID", "CAMERA_LUT", "CAMERA_LUT_ENABLE", "CAMERA_PIN", "CAMERA_RUNTIME", "CAMERA_TYPE",
+            "CAMERA_ID", "CAMERA_LUT", "CAMERA_LUT_ENABLE", "CAMERA_PIN", "CAMERA_RUNTIME", "CAMERA_TYPE",
             "CDL_ENABLE", "CLIP_DURATION", "CLIP_NAME_2", "COLOR_SPACE", "DATE", "EXPOSURE_ADJUST",
             "FACE_DETECTION_ENABLE", "FACE_DETECTION_FALLBACK", "FACE_DETECTION_PRIORITY", "FALSE_COLOR_ENABLE", "FALSE_COLOR_MODE",
             "FAN_MODE", "FOCUS_DIST_FAR", "FOCUS_DIST_NEAR", "FOCUS_DIST_MARK", "FRAME_LIMIT_ENABLE", 
@@ -551,7 +575,7 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
             "PRORES_QUALITY", "PRORES_RESOLUTION", "R3D_QUALITY", "RCP_VERSION", "RECORD_CODEC", "RECORD_FORMAT", "RECORD_MODE", "RECORD_STATE", 
             "RF_IRIS_COMPENSATION_ENABLE", "RF_RING_CONTROL", "RF_RING_ENABLE", "ROLL_OFF", "SDI_COLOR_SETTING", "SENSOR_FLIP_MIRROR", 
             "SENSOR_FRAME_RATE", "TALLY_LED_ENABLE", "TIME", "TIMECODE", "TINT", "WIFI_INFRASTRUCTURE_SSID", "WIFI_IP_ADDRESS", "WIFI_MAC_ADDRESS", 
-            "WIFI_MODE", "WIFI_STATUS"
+            "WIFI_MODE", "WIFI_STATUS", "CDL"
         ]
 
         for (const v in vars) {

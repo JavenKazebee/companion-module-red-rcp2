@@ -2,7 +2,8 @@ import { DropdownChoice } from "@companion-module/base";
 
 export default class DropdownOptions {
     iso: DropdownChoice[] = [];
-    iris: DropdownChoice[] = [];
+    aperture: DropdownChoice[] = [];
+    colorTemperature: DropdownChoice[] = [];
     shutter: DropdownChoice[] = [];
     sensorFrameRate: DropdownChoice[] = [];
     sensorFormat: DropdownChoice[] = [];
@@ -12,6 +13,7 @@ export default class DropdownOptions {
     enableDisableToggle: DropdownChoice[] = [{id: 'enable', label: 'Enable'}, 
                                             {id: 'disable', label: 'Disable'}, 
                                             {id: 'toggle', label: 'Toggle'}];
-    incrementDecrement: DropdownChoice[] = [{id: 'increment', label: 'Increment'}, 
-                                            {id: 'decrement', label: 'Decrement'}];
+    incrementDecrementSet: DropdownChoice[] = [{id: 'increment', label: 'Increment'}, 
+                                            {id: 'decrement', label: 'Decrement'},
+                                            {id: 'set', label: 'Set'}];
 }

@@ -2,187 +2,200 @@ import ModuleInstance from "./index.js";
 
 export default function updateActions(self: ModuleInstance): void {
     self.setActionDefinitions({
-        set_iso: {
-            name: 'Set ISO',
+        iso: {
+            name: 'ISO',
             options: [
+                {
+                    id: 'selector',
+                    type: 'dropdown',
+                    label: 'Action',
+                    default: 'increment',
+                    choices: self.options.incrementDecrementSet,
+                },
                 {
                     id: 'val',
                     type: 'dropdown',
                     label: 'ISO',
-                    default: '',
-                    minChoicesForSearch: 3,
+                    default: self.options.iso[0]?.id,
                     choices: self.options.iso,
-                },
+                    isVisibleExpression: "$(options:selector) == 'set'", 
+                }
             ],
             callback: async(event) => {
-                self.camera?.set("ISO", event.options.val as number);
-            },
-            subscribe: () => {
-                self.camera?.getList("ISO");
-            }
-        },
-        adjust_iso: {
-            name: 'Adjust ISO',
-            options: [
-                {
-                    id: 'val',
-                    type: 'dropdown',
-                    label: 'ISO',
-                    default: 'increment',
-                    choices: self.options.incrementDecrement,
-                },
-            ],
-            callback: async(event) => {
-                const currentIndex = self.options.iso.findIndex((item) => item.id as number == self.getVariableValue('iso') as number);
+                const currentIndex = self.options.iso.findIndex((item) => item.id == self.getVariableValue('iso'));
+                for(let i = 0; i < self.options.iso.length; i++) {
+                }
                 // To increment, we have to not go over the last item
-                if(event.options.val === 'increment' && currentIndex < self.options.iso.length - 1) {
+                if(event.options.selector === 'increment' && currentIndex < self.options.iso.length - 1) {
                     self.camera?.set("ISO", self.options.iso[currentIndex + 1].id as number);
-                } else if(event.options.val === 'decrement' && currentIndex > 0) {
-                    self.log('info', 'decrementing');
+                } else if(event.options.selector === 'decrement' && currentIndex > 0) {
                     self.camera?.set("ISO", self.options.iso[currentIndex - 1].id as number);
+                } else if(event.options.selector === 'set') {
+                    self.camera?.set("ISO", event.options.val as number);
                 }
             },
             subscribe: () => {
                 self.camera?.getList("ISO");
             }
         },
-        set_iris: {
-            name: 'Set Iris',
+        aperture: {
+            name: 'Aperture',
             options: [
                 {
-                    id: 'val',
+                    id: 'selector',
                     type: 'dropdown',
-                    label: 'Iris',
-                    default: '',
-                    minChoicesForSearch: 3,
-                    choices: self.options.iris,
-                },
-            ],
-            callback: async(event) => {
-                let num = event.options.val as number;
-                self.camera?.set("APERTURE", num * 10);
-            },
-            subscribe: () => {
-                self.camera?.getList("APERTURE");
-            }
-        },
-        adjust_iris: {
-            name: 'Adjust Iris',
-            options: [
-                {
-                    id: 'val',
-                    type: 'dropdown',
-                    label: 'Iris',
+                    label: 'Action',
                     default: 'increment',
-                    choices: self.options.incrementDecrement,
+                    choices: self.options.incrementDecrementSet,
                 },
+                {
+                    id: 'val',
+                    type: 'dropdown',
+                    label: 'Aperture',
+                    default: self.options.aperture[0]?.id,
+                    choices: self.options.aperture,
+                    isVisibleExpression: "$(options:selector) == 'set'",
+                }
             ],
             callback: async(event) => {
-                const currentIndex = self.options.iris.findIndex((item) => item.id as number == self.getVariableValue('iris') as number);
-                self.log('info', self.options.iris.map((item) => item.id).toString());
+                const currentIndex = self.options.aperture.findIndex((item) => item.label == self.getVariableValue('aperture'));
                 // To increment, we have to not go over the last item
-                if(event.options.val === 'increment' && currentIndex < self.options.iris.length - 1) {
-                    self.log('info', 'incrementing');
-                    self.log('info', `Current Index: ${currentIndex}`);
-                    self.log('info', `Current Value: ${self.options.iris[currentIndex].id}`);
-                    self.log('info', `Next Value: ${self.options.iris[currentIndex + 1].id}`);
-                    self.camera?.set("APERTURE", self.options.iris[currentIndex + 1].id as number * 10);
-                } else if(event.options.val === 'decrement' && currentIndex > 0) {
-                    self.camera?.set("APERTURE", self.options.iris[currentIndex - 1].id as number * 10);
+                if(event.options.selector === 'increment' && currentIndex < self.options.aperture.length - 1) {
+                    self.camera?.set("APERTURE", self.options.aperture[currentIndex + 1].id as number);
+                } else if(event.options.selector === 'decrement' && currentIndex > 0) {
+                    self.camera?.set("APERTURE", self.options.aperture[currentIndex - 1].id as number);
+                } else if(event.options.selector === 'set') {
+                    self.camera?.set("APERTURE", event.options.val as number);
                 }
             },
             subscribe: () => {
                 self.camera?.getList("APERTURE");
             }
         },
-        set_white_balance: {
-            name: 'Set White Balance',
+        white_balance: {
+            name: 'White Balance',
             options: [
                 {
-                    id: 'val',
-                    type: 'number',
-                    label: 'White Balance',
-                    default: 5600,
-                    min: 1700,
-                    max: 10000,
+                    id: 'selector',
+                    type: 'dropdown',
+                    label: 'Action',
+                    default: 'increment',
+                    choices: self.options.incrementDecrementSet,
                 },
+                {
+                    id: 'val',
+                    type: 'dropdown',
+                    label: 'White Balance',
+                    default: self.options.colorTemperature[0]?.id,
+                    choices: self.options.colorTemperature,
+                    isVisibleExpression: "$(options:selector) == 'set'",
+                }
             ],
             callback: async(event) => {
-                self.camera?.set("COLOR_TEMPERATURE", event.options.val as number);
+                const currentIndex = self.options.colorTemperature.findIndex((item) => item.id == self.getVariableValue('white_balance'));
+                self.log('info', 'Current index: ' + currentIndex);
+                self.log('info', 'ID: ' + self.options.colorTemperature[0].id + ' Label: ' + self.options.colorTemperature[0].label);
+                // To increment, we have to not go over the last item
+                if(event.options.selector === 'increment' && currentIndex < self.options.colorTemperature.length - 1) {
+                    self.camera?.set("COLOR_TEMPERATURE", self.options.colorTemperature[currentIndex + 1].id as number);
+                } else if(event.options.selector === 'decrement' && currentIndex > 0) {
+                    self.camera?.set("COLOR_TEMPERATURE", self.options.colorTemperature[currentIndex - 1].id as number);
+                } else if(event.options.selector === 'set') {
+                    self.camera?.set("COLOR_TEMPERATURE", event.options.val as number);
+                }
             },
+            subscribe: () => {
+                self.camera?.getList("COLOR_TEMPERATURE");
+            }
         },
-        set_shutter: {
-            name: 'Set Shutter',
+        shutter: {
+            name: 'Shutter',
             options: [
+                {
+                    id: 'selector',
+                    type: 'dropdown',
+                    label: 'Action',
+                    default: 'increment',
+                    choices: self.options.incrementDecrementSet,
+                },
                 {
                     id: 'val',
                     type: 'dropdown',
                     label: 'Shutter',
-                    default: '',
-                    minChoicesForSearch: 3,
+                    default: self.options.shutter[0]?.id,
                     choices: self.options.shutter,
-                },
+                    isVisibleExpression: "$(options:selector) == 'set'",
+                }
             ],
             callback: async(event) => {
-                let num = parseFloat(event.options.val?.toString() as string) * 1000;
-                self.camera?.set("EXPOSURE_ANGLE", num);
+                const currentIndex = self.options.shutter.findIndex((item) => item.label == self.getVariableValue('shutter'));
+                self.log('info', 'Current index: ' + currentIndex);
+                self.log('info', 'ID: ' + self.options.shutter[0].id + ' Label: ' + self.options.shutter[0].label);
+                // To increment, we have to not go over the last item
+                if(event.options.selector === 'increment' && currentIndex < self.options.shutter.length - 1) {
+                    self.camera?.set("EXPOSURE_ANGLE", self.options.shutter[currentIndex + 1].id as number);
+                } else if(event.options.selector === 'decrement' && currentIndex > 0) {
+                    self.camera?.set("EXPOSURE_ANGLE", self.options.shutter[currentIndex - 1].id as number);
+                } else if(event.options.selector === 'set') {
+                    self.camera?.set("EXPOSURE_ANGLE", event.options.val as number);
+                }
             },
             subscribe: () => {
                 self.camera?.getList("EXPOSURE_ANGLE");
             }
         },
-        set_sensor_frame_rate: {
-            name: 'Set Sensor Frame Rate',
+        sensor_frame_rate: {
+            name: 'Sensor Frame Rate',
             options: [
                 {
                     id: 'val',
                     type: 'dropdown',
                     label: 'Frame Rate',
-                    default: '',
+                    default: self.options.sensorFrameRate[0]?.id,
                     minChoicesForSearch: 3,
                     choices: self.options.sensorFrameRate,
                 },
             ],
             callback: async(event) => {
-                self.camera?.set("SENSOR_FRAME_RATE", event.options.val as number * 1000);
+                self.camera?.set("SENSOR_FRAME_RATE", event.options.val?.toString());
             },
             subscribe: () => {
                 self.camera?.getList("SENSOR_FRAME_RATE");
             }
         },
-        set_sensor_format: {
-            name: 'Set Sensor Format',
+        sensor_format: {
+            name: 'Sensor Format',
             options: [
                 {
                     id: 'val',
                     type: 'dropdown',
                     label: 'Sensor Format',
-                    default: '',
+                    default: self.options.sensorFormat[0]?.id,
                     minChoicesForSearch: 3,
                     choices: self.options.sensorFormat,
                 },
             ],
             callback: async(event) => {
-                self.camera?.set("RECORD_FORMAT", event.options.val as number);
+                self.camera?.set("RECORD_FORMAT", event.options.val?.toString());
             },
             subscribe: () => {
                 self.camera?.getList("RECORD_FORMAT");
             },
         },
-        set_camera_lut: {
-            name: 'Set Camera LUT',
+        camera_lut: {
+            name: 'Camera LUT',
             options: [
                 {
                     id: 'val',
                     type: 'dropdown',
                     label: 'Camera LUT',
-                    default: '',
+                    default: self.options.cameraLuts[0]?.id,
                     minChoicesForSearch: 3,
                     choices: self.options.cameraLuts,
                 }
             ],
             callback: async(event) => {
-                self.camera?.set("CAMERA_LUT", event.options.val as string);
+                self.camera?.set("CAMERA_LUT", event.options.val?.toString());
             },
             subscribe: () => {
                 self.camera?.getList("CAMERA_LUT");
@@ -196,7 +209,6 @@ export default function updateActions(self: ModuleInstance): void {
                     type: 'dropdown',
                     label: 'Action',
                     default: 'toggle',
-                    minChoicesForSearch: 3,
                     choices: self.options.enableDisableToggle,
                 }
             ],
@@ -217,36 +229,48 @@ export default function updateActions(self: ModuleInstance): void {
                         break;
                 }
             },
-            subscribe: () => {
-                self.camera?.getList("CAMERA_LUT_ENABLE");
-            }
         },
         media_format: {
             name: 'Media Format',
             options: [], // Options are required even if empty for some reason
             callback: async(_) => {
-                self.camera?.set("MEDIA_FORMAT", 1); // Normal format
+                self.camera?.set("MEDIA_FORMAT", 3);
             }
         },
-        camera_preset_apply: {
-            name: 'Camera Preset Apply',
+        media_format_confirm: {
+            name: 'Media Format Confirm',
+            options: [], // Options are required even if empty for some reason
+            callback: async(_) => {
+                self.camera?.set("MEDIA_FORMAT", 2);
+            }
+        },
+        media_format_confirm_footage: {
+            name: 'Media Format Confirm Footage',
+            options: [], // Options are required even if empty for some reason
+            callback: async(_) => {
+                self.camera?.set("MEDIA_FORMAT", 4);
+            }
+        },        
+        preset_apply: {
+            name: 'Preset Apply',
             options: [
                 {
                     id: 'val',
                     type: 'dropdown',
                     label: 'Preset',
-                    default: '',
+                    default: self.options.presets[0]?.id,
                     minChoicesForSearch: 3,
                     choices: self.options.presets,
                 }
             ],
-            callback: async(_) => {
-                self.camera?.set("CAMERA_PRESET_APPLY");
+            callback: async(event) => {
+                self.camera?.set("CAMERA_PRESET_APPLY", event.options.val?.toString());
             },
             subscribe: () => {
                 self.camera?.getList("CAMERA_PRESET_LIST");
             }
         },
+
         color_space: {
             name: 'Color Space',
             options: [
@@ -254,7 +278,7 @@ export default function updateActions(self: ModuleInstance): void {
                     id: 'val',
                     type: 'dropdown',
                     label: 'Color Space',
-                    default: '',
+                    default: self.options.colorSpace[0]?.id,
                     minChoicesForSearch: 3,
                     choices: self.options.colorSpace,
                 }
@@ -265,6 +289,6 @@ export default function updateActions(self: ModuleInstance): void {
             subscribe: () => {
                 self.camera?.getList("COLOR_SPACE");
             }
-        }
+        },
     });
 }
