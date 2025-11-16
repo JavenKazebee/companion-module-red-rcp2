@@ -4,7 +4,6 @@ export default class DropdownOptions {
     iso: DropdownChoice[] = [];
     aperture: DropdownChoice[] = [];
     colorTemperature: DropdownChoice[] = [];
-    recordCodec: DropdownChoice[] = [];
     shutter: DropdownChoice[] = [];
     sensorFrameRate: DropdownChoice[] = [];
     sensorFormat: DropdownChoice[] = [];

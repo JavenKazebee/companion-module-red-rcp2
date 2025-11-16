@@ -435,41 +435,6 @@ export default function updateActions(self: ModuleInstance): void {
             }
         },
 
-        record_codec: {
-            name: 'Record Codec',
-            options: [
-                {
-                    id: 'useVariable',
-                    type: 'checkbox',
-                    label: 'Use variable input',
-                    default: false,
-                },
-                {
-                    id: 'val',
-                    type: 'dropdown',
-                    label: 'Record Codec',
-                    default: self.options.recordCodec[0]?.id,
-                    choices: self.options.recordCodec,
-                    isVisibleExpression: "!$(options:useVariable)",
-                },
-                {
-                    id: 'valVariable',
-                    type: 'textinput',
-                    label: 'Record Codec (variable)',
-                    useVariables: true,
-                    default: '',
-                    isVisibleExpression: "$(options:useVariable)",
-                }
-            ],
-            callback: async(event) => {
-                const value = event.options.useVariable ? event.options.valVariable : event.options.val;
-                self.camera?.set("RECORD_CODEC", value?.toString());
-            },
-            subscribe: () => {
-                self.camera?.getList("RECORD_CODEC");
-            }
-        },
-
         record: {
             name: 'Record',
             options: [
