@@ -13,12 +13,27 @@ export default function updateActions(self: ModuleInstance): void {
                     choices: self.options.incrementDecrementSet,
                 },
                 {
+                    id: 'useVariable',
+                    type: 'checkbox',
+                    label: 'Use variable input',
+                    default: false,
+                    isVisibleExpression: "$(options:selector) == 'set'",
+                },
+                {
                     id: 'val',
                     type: 'dropdown',
                     label: 'ISO',
                     default: self.options.iso[0]?.id,
                     choices: self.options.iso,
-                    isVisibleExpression: "$(options:selector) == 'set'", 
+                    isVisibleExpression: "$(options:selector) == 'set' && !$(options:useVariable)", 
+                },
+                {
+                    id: 'valVariable',
+                    type: 'textinput',
+                    label: 'ISO (variable)',
+                    useVariables: true,
+                    default: '',
+                    isVisibleExpression: "$(options:selector) == 'set' && $(options:useVariable)",
                 }
             ],
             callback: async(event) => {
@@ -31,7 +46,8 @@ export default function updateActions(self: ModuleInstance): void {
                 } else if(event.options.selector === 'decrement' && currentIndex > 0) {
                     self.camera?.set("ISO", self.options.iso[currentIndex - 1].id as number);
                 } else if(event.options.selector === 'set') {
-                    self.camera?.set("ISO", event.options.val as number);
+                    const value = event.options.useVariable ? event.options.valVariable : event.options.val;
+                    self.camera?.set("ISO", value as number);
                 }
             },
             subscribe: () => {
@@ -49,12 +65,27 @@ export default function updateActions(self: ModuleInstance): void {
                     choices: self.options.incrementDecrementSet,
                 },
                 {
+                    id: 'useVariable',
+                    type: 'checkbox',
+                    label: 'Use variable input',
+                    default: false,
+                    isVisibleExpression: "$(options:selector) == 'set'",
+                },
+                {
                     id: 'val',
                     type: 'dropdown',
                     label: 'Aperture',
                     default: self.options.aperture[0]?.id,
                     choices: self.options.aperture,
-                    isVisibleExpression: "$(options:selector) == 'set'",
+                    isVisibleExpression: "$(options:selector) == 'set' && !$(options:useVariable)",
+                },
+                {
+                    id: 'valVariable',
+                    type: 'textinput',
+                    label: 'Aperture (variable)',
+                    useVariables: true,
+                    default: '',
+                    isVisibleExpression: "$(options:selector) == 'set' && $(options:useVariable)",
                 }
             ],
             callback: async(event) => {
@@ -65,7 +96,8 @@ export default function updateActions(self: ModuleInstance): void {
                 } else if(event.options.selector === 'decrement' && currentIndex > 0) {
                     self.camera?.set("APERTURE", self.options.aperture[currentIndex - 1].id as number);
                 } else if(event.options.selector === 'set') {
-                    self.camera?.set("APERTURE", event.options.val as number);
+                    const value = event.options.useVariable ? event.options.valVariable : event.options.val;
+                    self.camera?.set("APERTURE", value as number);
                 }
             },
             subscribe: () => {
@@ -83,12 +115,27 @@ export default function updateActions(self: ModuleInstance): void {
                     choices: self.options.incrementDecrementSet,
                 },
                 {
+                    id: 'useVariable',
+                    type: 'checkbox',
+                    label: 'Use variable input',
+                    default: false,
+                    isVisibleExpression: "$(options:selector) == 'set'",
+                },
+                {
                     id: 'val',
                     type: 'dropdown',
                     label: 'White Balance',
                     default: self.options.colorTemperature[0]?.id,
                     choices: self.options.colorTemperature,
-                    isVisibleExpression: "$(options:selector) == 'set'",
+                    isVisibleExpression: "$(options:selector) == 'set' && !$(options:useVariable)",
+                },
+                {
+                    id: 'valVariable',
+                    type: 'textinput',
+                    label: 'White Balance (variable)',
+                    useVariables: true,
+                    default: '',
+                    isVisibleExpression: "$(options:selector) == 'set' && $(options:useVariable)",
                 }
             ],
             callback: async(event) => {
@@ -101,7 +148,8 @@ export default function updateActions(self: ModuleInstance): void {
                 } else if(event.options.selector === 'decrement' && currentIndex > 0) {
                     self.camera?.set("COLOR_TEMPERATURE", self.options.colorTemperature[currentIndex - 1].id as number);
                 } else if(event.options.selector === 'set') {
-                    self.camera?.set("COLOR_TEMPERATURE", event.options.val as number);
+                    const value = event.options.useVariable ? event.options.valVariable : event.options.val;
+                    self.camera?.set("COLOR_TEMPERATURE", value as number);
                 }
             },
             subscribe: () => {
@@ -119,12 +167,27 @@ export default function updateActions(self: ModuleInstance): void {
                     choices: self.options.incrementDecrementSet,
                 },
                 {
+                    id: 'useVariable',
+                    type: 'checkbox',
+                    label: 'Use variable input',
+                    default: false,
+                    isVisibleExpression: "$(options:selector) == 'set'",
+                },
+                {
                     id: 'val',
                     type: 'dropdown',
                     label: 'Shutter',
                     default: self.options.shutter[0]?.id,
                     choices: self.options.shutter,
-                    isVisibleExpression: "$(options:selector) == 'set'",
+                    isVisibleExpression: "$(options:selector) == 'set' && !$(options:useVariable)",
+                },
+                {
+                    id: 'valVariable',
+                    type: 'textinput',
+                    label: 'Shutter (variable)',
+                    useVariables: true,
+                    default: '',
+                    isVisibleExpression: "$(options:selector) == 'set' && $(options:useVariable)",
                 }
             ],
             callback: async(event) => {
@@ -137,7 +200,8 @@ export default function updateActions(self: ModuleInstance): void {
                 } else if(event.options.selector === 'decrement' && currentIndex > 0) {
                     self.camera?.set("EXPOSURE_ANGLE", self.options.shutter[currentIndex - 1].id as number);
                 } else if(event.options.selector === 'set') {
-                    self.camera?.set("EXPOSURE_ANGLE", event.options.val as number);
+                    const value = event.options.useVariable ? event.options.valVariable : event.options.val;
+                    self.camera?.set("EXPOSURE_ANGLE", value as number);
                 }
             },
             subscribe: () => {
@@ -148,16 +212,32 @@ export default function updateActions(self: ModuleInstance): void {
             name: 'Sensor Frame Rate',
             options: [
                 {
+                    id: 'useVariable',
+                    type: 'checkbox',
+                    label: 'Use variable input',
+                    default: false,
+                },
+                {
                     id: 'val',
                     type: 'dropdown',
                     label: 'Frame Rate',
                     default: self.options.sensorFrameRate[0]?.id,
                     minChoicesForSearch: 3,
                     choices: self.options.sensorFrameRate,
+                    isVisibleExpression: "!$(options:useVariable)",
+                },
+                {
+                    id: 'valVariable',
+                    type: 'textinput',
+                    label: 'Frame Rate (variable)',
+                    useVariables: true,
+                    default: '',
+                    isVisibleExpression: "$(options:useVariable)",
                 },
             ],
             callback: async(event) => {
-                self.camera?.set("SENSOR_FRAME_RATE", event.options.val?.toString());
+                const value = event.options.useVariable ? event.options.valVariable : event.options.val;
+                self.camera?.set("SENSOR_FRAME_RATE", value?.toString());
             },
             subscribe: () => {
                 self.camera?.getList("SENSOR_FRAME_RATE");
@@ -167,16 +247,32 @@ export default function updateActions(self: ModuleInstance): void {
             name: 'Sensor Format',
             options: [
                 {
+                    id: 'useVariable',
+                    type: 'checkbox',
+                    label: 'Use variable input',
+                    default: false,
+                },
+                {
                     id: 'val',
                     type: 'dropdown',
                     label: 'Sensor Format',
                     default: self.options.sensorFormat[0]?.id,
                     minChoicesForSearch: 3,
                     choices: self.options.sensorFormat,
+                    isVisibleExpression: "!$(options:useVariable)",
+                },
+                {
+                    id: 'valVariable',
+                    type: 'textinput',
+                    label: 'Sensor Format (variable)',
+                    useVariables: true,
+                    default: '',
+                    isVisibleExpression: "$(options:useVariable)",
                 },
             ],
             callback: async(event) => {
-                self.camera?.set("RECORD_FORMAT", event.options.val?.toString());
+                const value = event.options.useVariable ? event.options.valVariable : event.options.val;
+                self.camera?.set("RECORD_FORMAT", value?.toString());
             },
             subscribe: () => {
                 self.camera?.getList("RECORD_FORMAT");
@@ -186,16 +282,32 @@ export default function updateActions(self: ModuleInstance): void {
             name: 'Camera LUT',
             options: [
                 {
+                    id: 'useVariable',
+                    type: 'checkbox',
+                    label: 'Use variable input',
+                    default: false,
+                },
+                {
                     id: 'val',
                     type: 'dropdown',
                     label: 'Camera LUT',
                     default: self.options.cameraLuts[0]?.id,
                     minChoicesForSearch: 3,
                     choices: self.options.cameraLuts,
+                    isVisibleExpression: "!$(options:useVariable)",
+                },
+                {
+                    id: 'valVariable',
+                    type: 'textinput',
+                    label: 'Camera LUT (variable)',
+                    useVariables: true,
+                    default: '',
+                    isVisibleExpression: "$(options:useVariable)",
                 }
             ],
             callback: async(event) => {
-                self.camera?.set("CAMERA_LUT", event.options.val?.toString());
+                const value = event.options.useVariable ? event.options.valVariable : event.options.val;
+                self.camera?.set("CAMERA_LUT", value?.toString());
             },
             subscribe: () => {
                 self.camera?.getList("CAMERA_LUT");
@@ -255,16 +367,32 @@ export default function updateActions(self: ModuleInstance): void {
             name: 'Preset Apply',
             options: [
                 {
+                    id: 'useVariable',
+                    type: 'checkbox',
+                    label: 'Use variable input',
+                    default: false,
+                },
+                {
                     id: 'val',
                     type: 'dropdown',
                     label: 'Preset',
                     default: self.options.presets[0]?.id,
                     minChoicesForSearch: 3,
                     choices: self.options.presets,
+                    isVisibleExpression: "!$(options:useVariable)",
+                },
+                {
+                    id: 'valVariable',
+                    type: 'textinput',
+                    label: 'Preset (variable)',
+                    useVariables: true,
+                    default: '',
+                    isVisibleExpression: "$(options:useVariable)",
                 }
             ],
             callback: async(event) => {
-                self.camera?.set("CAMERA_PRESET_APPLY", event.options.val?.toString());
+                const value = event.options.useVariable ? event.options.valVariable : event.options.val;
+                self.camera?.set("CAMERA_PRESET_APPLY", value?.toString());
             },
             subscribe: () => {
                 self.camera?.getList("CAMERA_PRESET_LIST");
@@ -275,16 +403,32 @@ export default function updateActions(self: ModuleInstance): void {
             name: 'Color Space',
             options: [
                 {
+                    id: 'useVariable',
+                    type: 'checkbox',
+                    label: 'Use variable input',
+                    default: false,
+                },
+                {
                     id: 'val',
                     type: 'dropdown',
                     label: 'Color Space',
                     default: self.options.colorSpace[0]?.id,
                     minChoicesForSearch: 3,
                     choices: self.options.colorSpace,
+                    isVisibleExpression: "!$(options:useVariable)",
+                },
+                {
+                    id: 'valVariable',
+                    type: 'textinput',
+                    label: 'Color Space (variable)',
+                    useVariables: true,
+                    default: '',
+                    isVisibleExpression: "$(options:useVariable)",
                 }
             ],
             callback: async(event) => {
-                self.camera?.set("COLOR_SPACE", event.options.val?.toString());
+                const value = event.options.useVariable ? event.options.valVariable : event.options.val;
+                self.camera?.set("COLOR_SPACE", value?.toString());
             },
             subscribe: () => {
                 self.camera?.getList("COLOR_SPACE");
@@ -295,15 +439,31 @@ export default function updateActions(self: ModuleInstance): void {
             name: 'Record Codec',
             options: [
                 {
+                    id: 'useVariable',
+                    type: 'checkbox',
+                    label: 'Use variable input',
+                    default: false,
+                },
+                {
                     id: 'val',
                     type: 'dropdown',
                     label: 'Record Codec',
                     default: self.options.recordCodec[0]?.id,
                     choices: self.options.recordCodec,
+                    isVisibleExpression: "!$(options:useVariable)",
+                },
+                {
+                    id: 'valVariable',
+                    type: 'textinput',
+                    label: 'Record Codec (variable)',
+                    useVariables: true,
+                    default: '',
+                    isVisibleExpression: "$(options:useVariable)",
                 }
             ],
             callback: async(event) => {
-                self.camera?.set("RECORD_CODEC", event.options.val?.toString());
+                const value = event.options.useVariable ? event.options.valVariable : event.options.val;
+                self.camera?.set("RECORD_CODEC", value?.toString());
             },
             subscribe: () => {
                 self.camera?.getList("RECORD_CODEC");
@@ -314,6 +474,12 @@ export default function updateActions(self: ModuleInstance): void {
             name: 'Record',
             options: [
                 {
+                    id: 'useVariable',
+                    type: 'checkbox',
+                    label: 'Use variable input',
+                    default: false,
+                },
+                {
                     id: 'val',
                     type: 'dropdown',
                     label: 'Record',
@@ -323,11 +489,21 @@ export default function updateActions(self: ModuleInstance): void {
                         {id: '1', label: 'Start'},
                         {id: '2', label: 'Toggle'}
                     ],
+                    isVisibleExpression: "!$(options:useVariable)",
+                },
+                {
+                    id: 'valVariable',
+                    type: 'textinput',
+                    label: 'Record (variable)',
+                    useVariables: true,
+                    default: '',
+                    isVisibleExpression: "$(options:useVariable)",
                 }
             ],
 
             callback: async(event) => {
-                self.camera?.set("SET_RECORD_STATE", event.options.val?.toString());
+                const value = event.options.useVariable ? event.options.valVariable : event.options.val;
+                self.camera?.set("SET_RECORD_STATE", value?.toString());
             }
         },
 
@@ -339,6 +515,7 @@ export default function updateActions(self: ModuleInstance): void {
                     type: 'textinput',
                     label: 'Command ID',
                     default: '',
+                    useVariables: true,
                 },
                 {
                     id: 'argument',
@@ -346,6 +523,7 @@ export default function updateActions(self: ModuleInstance): void {
                     label: 'Argument',
                     default: '',
                     required: false,
+                    useVariables: true,
                 }
             ],
             callback: async(event) => {
