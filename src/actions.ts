@@ -284,11 +284,73 @@ export default function updateActions(self: ModuleInstance): void {
                 }
             ],
             callback: async(event) => {
-                self.camera?.set("COLOR_SPACE", event.options.val as number);
+                self.camera?.set("COLOR_SPACE", event.options.val?.toString());
             },
             subscribe: () => {
                 self.camera?.getList("COLOR_SPACE");
             }
         },
+
+        record_codec: {
+            name: 'Record Codec',
+            options: [
+                {
+                    id: 'val',
+                    type: 'dropdown',
+                    label: 'Record Codec',
+                    default: self.options.recordCodec[0]?.id,
+                    choices: self.options.recordCodec,
+                }
+            ],
+            callback: async(event) => {
+                self.camera?.set("RECORD_CODEC", event.options.val?.toString());
+            },
+            subscribe: () => {
+                self.camera?.getList("RECORD_CODEC");
+            }
+        },
+
+        record: {
+            name: 'Record',
+            options: [
+                {
+                    id: 'val',
+                    type: 'dropdown',
+                    label: 'Record',
+                    default: 'enable',
+                    choices: [
+                        {id: '0', label: 'Stop'},
+                        {id: '1', label: 'Start'},
+                        {id: '2', label: 'Toggle'}
+                    ],
+                }
+            ],
+
+            callback: async(event) => {
+                self.camera?.set("SET_RECORD_STATE", event.options.val?.toString());
+            }
+        },
+
+        generic: {
+            name: 'Generic',
+            options: [
+                {
+                    id: 'commandId',
+                    type: 'textinput',
+                    label: 'Command ID',
+                    default: '',
+                },
+                {
+                    id: 'argument',
+                    type: 'textinput',
+                    label: 'Argument',
+                    default: '',
+                    required: false,
+                }
+            ],
+            callback: async(event) => {
+                self.camera?.set(event.options.commandId?.toString() ?? '', event.options.argument?.toString());
+            }
+        }
     });
 }

@@ -195,6 +195,13 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
                 });
                 updateActions(this);
                 break;
+            case "RECORD_CODEC":
+                this.options.recordCodec = [];
+                data.list.data.forEach((item) => {
+                    this.options.recordCodec.push({ id: item.num!, label: item.str! });
+                });
+                updateActions(this);
+                break;
         }
     }
 
