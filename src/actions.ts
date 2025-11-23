@@ -448,7 +448,7 @@ export default function updateActions(self: ModuleInstance): void {
                     id: 'val',
                     type: 'dropdown',
                     label: 'Record',
-                    default: 'enable',
+                    default: '1',
                     choices: [
                         {id: '0', label: 'Stop'},
                         {id: '1', label: 'Start'},
@@ -468,7 +468,7 @@ export default function updateActions(self: ModuleInstance): void {
 
             callback: async(event) => {
                 const value = event.options.useVariable ? event.options.valVariable : event.options.val;
-                self.camera?.set("SET_RECORD_STATE", value?.toString());
+                self.camera?.set("RECORD_STATE", value?.toString());
             }
         },
 
