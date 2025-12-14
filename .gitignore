@@ -5,3 +5,4 @@ pkg.tgz
 dist/
 yarn.lock
 .DS_Store
+*.tgz

@@ -1,11 +1,11 @@
 {
-	"id": "rcp2",
+	"id": "red-control",
 	"name": "RED RCP2",
 	"shortname": "RCP2",
 	"description": "",
 	"manufacturer": "RED",
 	"products": ["Komodo", "Komodo-X"],
-	"version": "0.0.1",
+	"version": "0.0.0",
 	"license": "MIT",
     "repository": "https://github.com/javenkazebee/red-rcp2",
     "bugs": "https://github.com/javenkazebee/red-rcp2/issues",
