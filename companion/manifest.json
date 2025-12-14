@@ -7,9 +7,9 @@
 	"products": ["Komodo", "Komodo-X"],
 	"version": "0.0.0",
 	"license": "MIT",
-    "repository": "https://github.com/javenkazebee/red-rcp2",
-    "bugs": "https://github.com/javenkazebee/red-rcp2/issues",
-    "keywords": ["camera", "rcp2"],
+	"repository": "https://github.com/javenkazebee/red-rcp2",
+	"bugs": "https://github.com/javenkazebee/red-rcp2/issues",
+	"keywords": ["camera", "rcp2"],
 	"maintainers": [
 		{
 			"name": "Javen Kazebee",
