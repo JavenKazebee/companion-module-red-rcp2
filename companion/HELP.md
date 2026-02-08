@@ -6,10 +6,7 @@ Has been tested and verified working with:
 
 - Komodo
 - Komodo-X
-
-Should be compatible with:
-
-- V-Raptor
+- V-Raptor (VV and Super35)
 
 # Configuration
 
@@ -19,9 +16,9 @@ Communication > Connections > Wi-Fi
 
 - Set mode to infrastructure
 - Connect camera to the same network as companion
-- Once connected, copy the IP address
+- Once connected, copy the IP address and put that in the companion configuration
 
 ### On Companion Connection
 
 IP Address: IP Address of the camera  
-Reconnect attempt rate: How often the connection should look for cameras. The more frequent, the more computing power used but the quicker the connection will connect to cameras when they turn on.
+Reconnect attempt rate: How often the connection should look for cameras.
