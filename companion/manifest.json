@@ -4,7 +4,7 @@
 	"shortname": "RCP2",
 	"description": "",
 	"manufacturer": "RED",
-	"products": ["Komodo", "Komodo-X"],
+	"products": ["Komodo", "Komodo-X", "V-Raptor"],
 	"version": "0.0.0",
 	"license": "MIT",
 	"repository": "https://github.com/javenkazebee/red-rcp2",
