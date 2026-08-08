@@ -1,10 +1,17 @@
-import { InstanceBase, InstanceStatus, runEntrypoint, SomeCompanionConfigField } from '@companion-module/base'
+import {
+	InstanceBase,
+	InstanceStatus,
+	runEntrypoint,
+	SomeCompanionConfigField,
+	DropdownChoice,
+} from '@companion-module/base'
 import { configFields, ModuleConfig } from './config.js'
 import updateActions from './actions.js'
 import updateVariableDefinitions from './variables.js'
 import { upgradeScripts } from './upgrade.js'
 import { Camera, Types } from 'red-rcp2'
 import DropdownOptions from './options.js'
+import { PARAMETERS, PARAMETERS_BY_ID } from './parameters.js'
 
 export default class ModuleInstance extends InstanceBase<ModuleConfig> {
 	config!: ModuleConfig
@@ -30,14 +37,14 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
 	}
 
 	async destroy(): Promise<void> {
-		this.camera = null
+		this.teardownCamera()
 		clearTimeout(this.reconnectTimer as NodeJS.Timeout)
 	}
 
 	async configUpdated(config: ModuleConfig): Promise<void> {
 		// If the IP has changed, clear the camera, update the ip, and re-connect
 		if (this.config.ip != config.ip) {
-			this.camera = null
+			this.teardownCamera()
 			this.config.ip = config.ip
 			this.attemptConnection()
 		}
@@ -50,6 +57,16 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
 				this.reconnectTimer = null
 			}
 			this.reconnectUntilConnected()
+		}
+
+		// If the camera model has changed, regenerate actions/variables and re-fetch under the new scope
+		if (this.config.cameraModel != config.cameraModel) {
+			this.config.cameraModel = config.cameraModel
+			this.updateActions()
+			this.updateVariableDefinitions()
+			if (this.camera) {
+				this.initalizeVariables()
+			}
 		}
 
 		// Update the config
@@ -96,6 +113,7 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
 
 				this.subscribeActions()
 				this.initalizeVariables()
+				this.camera.getParameters()
 				this.updateStatus(InstanceStatus.Ok)
 
 				resolve(true)
@@ -111,6 +129,42 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
 			}
 		})
 	}
+
+	private teardownCamera(): void {
+		if (this.camera) {
+			this.camera.removeAllListeners()
+			this.camera.disconnect()
+		}
+		this.camera = null
+	}
+
+	cameraGet(...args: Parameters<Camera['get']>): void {
+		if (!this.camera) return
+		try {
+			this.camera.get(...args)
+		} catch (e: any) {
+			this.log('debug', `Camera get failed (${args[0]}): ${e.message}`)
+		}
+	}
+
+	cameraGetList(...args: Parameters<Camera['getList']>): void {
+		if (!this.camera) return
+		try {
+			this.camera.getList(...args)
+		} catch (e: any) {
+			this.log('debug', `Camera getList failed (${args[0]}): ${e.message}`)
+		}
+	}
+
+	cameraSet(...args: Parameters<Camera['set']>): void {
+		if (!this.camera) return
+		try {
+			this.camera.set(...args)
+		} catch (e: any) {
+			this.log('debug', `Camera set failed (${args[0]}): ${e.message}`)
+		}
+	}
+
 	messageHandler(data: any) {
 		switch (data.type) {
 			case 'rcp_cur_list':
@@ -125,453 +179,39 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
 			case 'rcp_cur_cdl':
 				this.handleCurCDL(data)
 				break
+			case 'rcp_cur_parameters':
+				this.handleCurParameters(data)
+				break
+		}
+	}
+
+	handleCurParameters(data: Types.CurParameters) {
+		const unknown = data.parameters.filter((id) => !PARAMETERS_BY_ID.has(id))
+		if (unknown.length > 0) {
+			this.log(
+				'debug',
+				`Camera reports ${unknown.length} parameter(s) not covered by tracked variables: ${unknown.join(', ')}`,
+			)
 		}
 	}
 
 	handleList(data: Types.CurList) {
-		// Update dropdown options
-		switch (data.id) {
-			case 'ISO':
-				this.options.iso = []
-				data.list.data.forEach((item) => {
-					this.options.iso.push({ id: item.num!, label: item.str! })
-				})
-				updateActions(this)
-				break
-			case 'APERTURE':
-				this.options.aperture = []
-				data.list.data.forEach((item) => {
-					this.options.aperture.push({ id: item.num!, label: item.str! })
-				})
-				updateActions(this)
-				break
-			case 'COLOR_TEMPERATURE':
-				this.options.colorTemperature = []
-				data.list.data.forEach((item) => {
-					this.options.colorTemperature.push({
-						id: item.num!,
-						label: item.str!,
-					})
-				})
-				updateActions(this)
-				break
-			case 'EXPOSURE_ANGLE':
-				this.options.shutter = []
-				data.list.data.forEach((item) => {
-					this.options.shutter.push({ id: item.num!, label: item.str! })
-				})
-				updateActions(this)
-				break
-			case 'SENSOR_FRAME_RATE':
-				this.options.sensorFrameRate = []
-				data.list.data.forEach((item) => {
-					this.options.sensorFrameRate.push({
-						id: item.num!,
-						label: item.str!,
-					})
-				})
-				updateActions(this)
-				break
-			case 'RECORD_FORMAT':
-				this.options.sensorFormat = []
-				data.list.data.forEach((item) => {
-					this.options.sensorFormat.push({ id: item.num!, label: item.str! })
-				})
-				updateActions(this)
-				break
-			case 'CAMERA_PRESET_LIST':
-				this.options.presets = []
-				data.list.data.forEach((item) => {
-					this.options.presets.push({ id: item.str!, label: item.str! })
-				})
-				updateActions(this)
-				break
-			case 'COLOR_SPACE':
-				this.options.colorSpace = []
-				data.list.data.forEach((item) => {
-					this.options.colorSpace.push({ id: item.num!, label: item.str! })
-				})
-				updateActions(this)
-				break
-			case 'CAMERA_LUT':
-				this.options.cameraLuts = []
-				data.list.data.forEach((item) => {
-					this.options.cameraLuts.push({ id: item.str!, label: item.str! })
-				})
-				updateActions(this)
-				break
-		}
+		const choices: DropdownChoice[] = data.list.data.map((item) => ({
+			id: data.send === 'str' ? item.str! : (item.num ?? item.str!),
+			label: item.str ?? String(item.num),
+		}))
+		this.options.lists.set(data.id, choices)
+		updateActions(this)
 	}
 
 	handleCurInt(data: Types.CurInt) {
-		// Update variables
-		switch (data.id) {
-			case 'ISO':
-				this.setVariableValues({ iso: data.cur.val })
-				break
-			case 'COLOR_TEMPERATURE':
-				this.setVariableValues({ white_balance: data.cur.val })
-				break
-			case 'AUDIO_EXTERNAL_LINK_GAIN':
-				this.setVariableValues({
-					audio_external_link_gain: data.cur.val ? 'On' : 'Off',
-				})
-				break
-			case 'AUDIO_INTERNAL_LINK_GAIN':
-				this.setVariableValues({
-					audio_internal_link_gain: data.cur.val ? 'On' : 'Off',
-				})
-				break
-			case 'CAMERA_LUT_ENABLE':
-				this.setVariableValues({
-					camera_lut_enable: data.cur.val ? 'Enabled' : 'Disabled',
-				})
-				break
-			case 'EXPOSURE_ADJUST':
-				this.setVariableValues({ exposure_adjust: data.cur.val })
-				break
-			case 'FACE_DETECTION_ENABLE':
-				this.setVariableValues({
-					face_detection_enable: data.cur.val ? 'Enabled' : 'Disabled',
-				})
-				break
-			case 'FALSE_COLOR_ENABLE':
-				this.setVariableValues({
-					false_color_enable: data.cur.val ? 'Enabled' : 'Disabled',
-				})
-				break
-			case 'FRAME_LIMIT_ENABLE':
-				this.setVariableValues({
-					frame_limit_enable: data.cur.val ? 'Enabled' : 'Disabled',
-				})
-				break
-			case 'FRAME_LIMIT_FRAMES':
-				this.setVariableValues({ frame_limit_frames: data.cur.val })
-				break
-			case 'HEADPHONE_VOLUME':
-				this.setVariableValues({ headphone_volume: data.cur.val })
-				break
-			case 'LOG_VIEW_ENABLE':
-				this.setVariableValues({
-					log_view_enable: data.cur.val ? 'Enabled' : 'Disabled',
-				})
-				break
-			case 'MEDIA_APPROVED_STATUS':
-				this.setVariableValues({
-					media_approved_status: data.cur.val ? 'Approved' : 'Unnapproved',
-				})
-				break
-			case 'MEDIA_CLIP_COUNT':
-				this.setVariableValues({ media_clip_count: data.cur.val })
-				break
-			case 'MEDIA_PERCENTAGE_REMAINING':
-				this.setVariableValues({ media_percentage_remaining: data.cur.val })
-				break
-			case 'PROJECT_FRAME_RATE':
-				this.setVariableValues({ project_frame_rate: data.cur.val })
-				break
-			case 'POWER_IN_ACTIVE':
-				this.setVariableValues({
-					active_power_source: data.cur.val ? 'BAT' : 'DC',
-				})
-				break
-			case 'POWER_OUT_ENABLE':
-				this.setVariableValues({
-					power_out_enable: data.cur.val ? 'Enabled' : 'Disabled',
-				})
-				break
-			case 'RCP_VERSION':
-				this.setVariableValues({ rcp_version: data.cur.val })
-				break
-			case 'RECORD_STATE':
-				this.setVariableValues({
-					record_state: {
-						0: 'Not Recording',
-						1: 'Recording',
-						2: 'Finalizing',
-						3: 'Pre Recording',
-						4: 'Encoding',
-					}[data.cur.val],
-				})
-				break
-			case 'SENSOR_FLIP_MIRROR':
-				this.setVariableValues({
-					sensor_flip_mirror: data.cur.val ? 'Enabled' : 'Disabled',
-				})
-				break
-			case 'TALLY_LED_ENABLE':
-				this.setVariableValues({
-					tally_led_enable: data.cur.val ? 'Enabled' : 'Disabled',
-				})
-				break
-			case 'APERTURE_CONTROL':
-				this.setVariableValues({
-					aperture_control: data.cur.val ? 'Supported' : 'Not Supported',
-				})
-				break
-		}
+		const def = PARAMETERS_BY_ID.get(data.id)
+		if (def) this.setVariableValues({ [def.variableId]: data.cur.val })
 	}
 
 	handleCurStr(data: Types.CurStr) {
-		// Update variables
-		switch (data.id) {
-			case 'APERTURE':
-				this.setVariableValues({ aperture: data.display.str })
-				break
-			case 'SENSOR_FRAME_RATE':
-				this.setVariableValues({ sensor_frame_rate: data.display.str })
-				break
-			case 'CAMERA_FIRMWARE_VERSION':
-				this.setVariableValues({ camera_firmware_version: data.display.str })
-				break
-			case 'CAMERA_ID':
-				this.setVariableValues({ camera_id: data.display.str })
-				break
-			case 'CAMERA_LUT':
-				this.setVariableValues({ camera_lut: data.display.str })
-				break
-			case 'AF_MODE':
-				this.setVariableValues({ af_mode: data.display.str })
-				break
-			case 'AF_POSITION':
-				this.setVariableValues({ af_position: data.display.str })
-				break
-			case 'AUDIO_HEADPHONE_MUTE':
-				this.setVariableValues({ audio_headphone_mute: data.display.str })
-				break
-			case 'AUDIO_SOURCE':
-				this.setVariableValues({ audio_source: data.display.str })
-				break
-			case 'AF_ENABLE':
-				this.setVariableValues({ af: data.display.str })
-				break
-			case 'AUDIO_HEADPHONE_SOURCE':
-				this.setVariableValues({ audio_headphone_source: data.display.str })
-				break
-			case 'AUDIO_INPUT_TYPE_CH3':
-				this.setVariableValues({ audio_input_type_ch3: data.display.str })
-				break
-			case 'AUDIO_INPUT_TYPE_CH4':
-				this.setVariableValues({ audio_input_type_ch4: data.display.str })
-				break
-			case 'AUDIO_EXTERNAL_LEFT_GAIN':
-				this.setVariableValues({ audio_external_left_gain: data.display.str })
-				break
-			case 'AUDIO_EXTERNAL_RIGHT_GAIN':
-				this.setVariableValues({ audio_external_right_gain: data.display.str })
-				break
-			case 'AUDIO_INTERNAL_LEFT_GAIN':
-				this.setVariableValues({ audio_internal_left_gain: data.display.str })
-				break
-			case 'AUDIO_INTERNAL_RIGHT_GAIN':
-				this.setVariableValues({ audio_internal_right_gain: data.display.str })
-				break
-			case 'BEEP_ENABLE':
-				this.setVariableValues({ beep_enable: data.display.str })
-				break
-			case 'BEEP_RECORD_START':
-				this.setVariableValues({ beep_record_start: data.display.str })
-				break
-			case 'BEEP_RECORD_STOP':
-				this.setVariableValues({ beep_record_stop: data.display.str })
-				break
-			case 'CAMERA_PIN':
-				this.setVariableValues({ camera_pin: data.display.str })
-				break
-			case 'CAMERA_RUNTIME':
-				this.setVariableValues({ camera_runtime: data.display.str })
-				break
-			case 'CAMERA_TYPE':
-				this.setVariableValues({ camera_type: data.display.str })
-				break
-			case 'CDL_ENABLE':
-				this.setVariableValues({ cdl_enable: data.display.str })
-				break
-			case 'CLIP_DURATION':
-				this.setVariableValues({ clip_duration: data.display.str })
-				break
-			case 'CLIP_NAME_2':
-				this.setVariableValues({ clip_name_2: data.display.str })
-				break
-			case 'COLOR_SPACE':
-				this.setVariableValues({ color_space: data.display.str })
-				break
-			case 'DATE':
-				this.setVariableValues({ date: data.display.str })
-				break
-			case 'FACE_DETECTION_FALLBACK':
-				this.setVariableValues({ face_detection_fallback: data.display.str })
-				break
-			case 'FACE_DETECTION_PRIORITY':
-				this.setVariableValues({ face_detection_priority: data.display.str })
-				break
-			case 'FALSE_COLOR_MODE':
-				this.setVariableValues({ false_color_mode: data.display.str })
-				break
-			case 'FAN_MODE':
-				this.setVariableValues({ fan_mode: data.display.str })
-				break
-			case 'FOCUS_DIST_FAR':
-				this.setVariableValues({ focus_dist_far: data.display.str })
-				break
-			case 'FOCUS_DIST_NEAR':
-				this.setVariableValues({ focus_dist_near: data.display.str })
-				break
-			case 'FOCUS_DIST_MARK':
-				this.setVariableValues({ focus_dist_mark: data.display.str })
-				break
-			case 'FRAME_LIMIT_PLAYBACK_DURATION':
-				this.setVariableValues({
-					frame_limit_playback_duration: data.display.str,
-				})
-				break
-			case 'GAIN':
-				this.setVariableValues({ gain: data.display.str })
-				break
-			case 'GENLOCK_STATE':
-				this.setVariableValues({ genlock_state: data.display.str })
-				break
-			case 'LANGUAGE':
-				this.setVariableValues({ language: data.display.str })
-				break
-			case 'LENS_BRAND':
-				this.setVariableValues({ lens_brand: data.display.str })
-				break
-			case 'LENS_FOCAL_LENGTH':
-				this.setVariableValues({ lens_focal_length: data.display.str })
-				break
-			case 'LENS_FOCUS_DISTANCE':
-				this.setVariableValues({ lens_focus_distance: data.display.str })
-				break
-			case 'LENS_HYPERFOCAL_DISTANCE':
-				this.setVariableValues({ lens_hyperfocal_distance: data.display.str })
-				break
-			case 'LENS_IS_STATUS':
-				this.setVariableValues({ lens_is_status: data.display.str })
-				break
-			case 'LENS_META_NAME':
-				this.setVariableValues({ lens_meta_name: data.display.str })
-				break
-			case 'LENS_OWNER':
-				this.setVariableValues({ lens_owner: data.display.str })
-				break
-			case 'LENS_SERIAL_NUMBER':
-				this.setVariableValues({ lens_serial_number: data.display.str })
-				break
-			case 'MEDIA_CAPACITY':
-				this.setVariableValues({ media_capacity: data.display.str })
-				break
-			case 'MEDIA_FIRMWARE_VERSION':
-				this.setVariableValues({ media_firmware_version: data.display.str })
-				break
-			case 'MEDIA_MODEL_NUMBER':
-				this.setVariableValues({ media_model_number: data.display.str })
-				break
-			case 'MEDIA_NAME':
-				this.setVariableValues({ media_name: data.display.str })
-				break
-			case 'MEDIA_SERIAL_NUMBER':
-				this.setVariableValues({ media_serial_number: data.display.str })
-				break
-			case 'MEDIA_STATUS':
-				this.setVariableValues({ media_status: data.display.str })
-				break
-			case 'MEDIA_TIME_REMAINING':
-				this.setVariableValues({ media_time_remaining: data.display.str })
-				break
-			case 'ND':
-				this.setVariableValues({ nd: data.display.str })
-				break
-			case 'ND_DISPLAY':
-				this.setVariableValues({ nd_display: data.display.str })
-				break
-			case 'OUTPUT_TONE_MAP':
-				this.setVariableValues({ output_tone_map: data.display.str })
-				break
-			case 'PDAF_STATS':
-				this.setVariableValues({ pdaf_stats: data.display.str })
-				break
-			case 'PLAYBACK_LENGTH':
-				this.setVariableValues({ playback_length: data.display.str })
-				break
-			case 'PLAYBACK_LOOP':
-				this.setVariableValues({ playback_loop: data.display.str })
-				break
-			case 'PLAYBACK_RATE':
-				this.setVariableValues({ playback_rate: data.display.str })
-				break
-			case 'PLAYBACK_STATE':
-				this.setVariableValues({ playback_state: data.display.str })
-				break
-			case 'PRORES_BAKED_IN_SETTINGS':
-				this.setVariableValues({ prores_baked_in_settings: data.display.str })
-				break
-			case 'PRORES_QUALITY':
-				this.setVariableValues({ prores_quality: data.display.str })
-				break
-			case 'PRORES_RESOLUTION':
-				this.setVariableValues({ prores_resolution: data.display.str })
-				break
-			case 'R3D_QUALITY':
-				this.setVariableValues({ r3d_quality: data.display.str })
-				break
-			case 'RECORD_CODEC':
-				this.setVariableValues({ record_codec: data.display.str })
-				break
-			case 'RECORD_FORMAT':
-				this.setVariableValues({ record_format: data.display.str })
-				break
-			case 'RECORD_MODE':
-				this.setVariableValues({ record_mode: data.display.str })
-				break
-			case 'RF_IRIS_COMPENSATION_ENABLE':
-				this.setVariableValues({
-					rf_iris_compensation_enable: data.display.str,
-				})
-				break
-			case 'RF_RING_CONTROL':
-				this.setVariableValues({ rf_ring_control: data.display.str })
-				break
-			case 'RF_RING_ENABLE':
-				this.setVariableValues({ rf_ring_enable: data.display.str })
-				break
-			case 'ROLL_OFF':
-				this.setVariableValues({ roll_off: data.display.str })
-				break
-			case 'SDI_COLOR_SETTING':
-				this.setVariableValues({ sdi_color_setting: data.display.str })
-				break
-			case 'TIME':
-				this.setVariableValues({ time: data.display.str })
-				break
-			case 'TIMECODE':
-				this.setVariableValues({ timecode: data.display.str })
-				break
-			case 'TINT':
-				this.setVariableValues({ tint: data.display.str })
-				break
-			case 'WIFI_INFRASTRUCTURE_SSID':
-				this.setVariableValues({ wifi_infrastructure_ssid: data.display.str })
-				break
-			case 'WIFI_IP_ADDRESS':
-				this.setVariableValues({ wifi_ip_address: data.display.str })
-				break
-			case 'WIFI_MAC_ADDRESS':
-				this.setVariableValues({ wifi_mac_address: data.display.str })
-				break
-			case 'WIFI_MODE':
-				this.setVariableValues({ wifi_mode: data.display.str })
-				break
-			case 'WIFI_STATUS':
-				this.setVariableValues({ wifi_status: data.display.str })
-				break
-			case 'EXPOSURE_ANGLE':
-				this.setVariableValues({ shutter: data.display.str })
-				break
-			case 'AF_SIZE':
-				this.setVariableValues({ af_size: data.display.str })
-				break
-		}
+		const def = PARAMETERS_BY_ID.get(data.id)
+		if (def) this.setVariableValues({ [def.variableId]: data.display.str })
 	}
 
 	handleCurCDL(data: Types.CurCdl) {
@@ -593,121 +233,10 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
 	}
 
 	initalizeVariables() {
-		const vars = [
-			'ISO',
-			'APERTURE',
-			'APERTURE_CONTROL',
-			'COLOR_TEMPERATURE',
-			'EXPOSURE_ANGLE',
-			'SENSOR_FRAME_RATE',
-			'RECORD_FORMAT',
-			'POWER_IN_ACTIVE',
-			'AF_ENABLE',
-			'AF_MODE',
-			'AF_POSITION',
-			'AF_SIZE',
-			'AUDIO_EXTERNAL_LEFT_GAIN',
-			'AUDIO_EXTERNAL_RIGHT_GAIN',
-			'AUDIO_EXTERNAL_LINK_GAIN',
-			'AUDIO_HEADPHONE_MUTE',
-			'AUDIO_HEADPHONE_SOURCE',
-			'AUDIO_INPUT_TYPE_CH3',
-			'AUDIO_INPUT_TYPE_CH4',
-			'AUDIO_INTERNAL_LEFT_GAIN',
-			'AUDIO_INTERNAL_RIGHT_GAIN',
-			'AUDIO_INTERNAL_LINK_GAIN',
-			'AUDIO_SOURCE',
-			'BEEP_ENABLE',
-			'BEEP_RECORD_START',
-			'BEEP_RECORD_STOP',
-			'CAMERA_FIRMWARE_VERSION',
-			'CAMERA_ID',
-			'CAMERA_LUT',
-			'CAMERA_LUT_ENABLE',
-			'CAMERA_PIN',
-			'CAMERA_RUNTIME',
-			'CAMERA_TYPE',
-			'CDL_ENABLE',
-			'CLIP_DURATION',
-			'CLIP_NAME_2',
-			'COLOR_SPACE',
-			'DATE',
-			'EXPOSURE_ADJUST',
-			'FACE_DETECTION_ENABLE',
-			'FACE_DETECTION_FALLBACK',
-			'FACE_DETECTION_PRIORITY',
-			'FALSE_COLOR_ENABLE',
-			'FALSE_COLOR_MODE',
-			'FAN_MODE',
-			'FOCUS_DIST_FAR',
-			'FOCUS_DIST_NEAR',
-			'FOCUS_DIST_MARK',
-			'FRAME_LIMIT_ENABLE',
-			'FRAME_LIMIT_FRAMES',
-			'FRAME_LIMIT_PLAYBACK_DURATION',
-			'GAIN',
-			'GENLOCK_STATE',
-			'HEADPHONE_VOLUME',
-			'LANGUAGE',
-			'LENS_BRAND',
-			'LENS_FOCAL_LENGTH',
-			'LENS_FOCUS_DISTANCE',
-			'LENS_HYPERFOCAL_DISTANCE',
-			'LENS_IS_STATUS',
-			'LENS_META_NAME',
-			'LENS_OWNER',
-			'LENS_SERIAL_NUMBER',
-			'LOG_VIEW_ENABLE',
-			'MEDIA_APPROVED_STATUS',
-			'MEDIA_CAPACITY',
-			'MEDIA_CLIP_COUNT',
-			'MEDIA_FIRMWARE_VERSION',
-			'MEDIA_MODEL_NUMBER',
-			'MEDIA_NAME',
-			'MEDIA_PERCENTAGE_REMAINING',
-			'MEDIA_SERIAL_NUMBER',
-			'MEDIA_STATUS',
-			'MEDIA_TIME_REMAINING',
-			'ND',
-			'ND_DISPLAY',
-			'OUTPUT_TONE_MAP',
-			'PDAF_STATS',
-			'PLAYBACK_LENGTH',
-			'PLAYBACK_LOOP',
-			'PLAYBACK_RATE',
-			'PLAYBACK_STATE',
-			'POWER_OUT_ENABLE',
-			'PROJECT_FRAME_RATE',
-			'PRORES_BAKED_IN_SETTINGS',
-			'PRORES_QUALITY',
-			'PRORES_RESOLUTION',
-			'R3D_QUALITY',
-			'RCP_VERSION',
-			'RECORD_CODEC',
-			'RECORD_FORMAT',
-			'RECORD_MODE',
-			'RECORD_STATE',
-			'RF_IRIS_COMPENSATION_ENABLE',
-			'RF_RING_CONTROL',
-			'RF_RING_ENABLE',
-			'ROLL_OFF',
-			'SDI_COLOR_SETTING',
-			'SENSOR_FLIP_MIRROR',
-			'SENSOR_FRAME_RATE',
-			'TALLY_LED_ENABLE',
-			'TIME',
-			'TIMECODE',
-			'TINT',
-			'WIFI_INFRASTRUCTURE_SSID',
-			'WIFI_IP_ADDRESS',
-			'WIFI_MAC_ADDRESS',
-			'WIFI_MODE',
-			'WIFI_STATUS',
-			'CDL',
-		]
-
-		for (const v in vars) {
-			this.camera?.get(vars[v])
+		for (const def of PARAMETERS) {
+			if (def.kind === 'action') continue
+			if (!def.cameras.includes(this.config.cameraModel)) continue
+			this.cameraGet(def.id)
 		}
 	}
 

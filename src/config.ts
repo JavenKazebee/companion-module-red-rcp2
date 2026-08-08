@@ -1,8 +1,10 @@
 import { Regex, SomeCompanionConfigField } from '@companion-module/base'
+import { CAMERA_MODEL_CHOICES, CameraModel } from './parameters.js'
 
 export interface ModuleConfig {
 	ip: string
 	reconnectRate: number
+	cameraModel: CameraModel
 }
 
 export let configFields: SomeCompanionConfigField[] = [
@@ -21,5 +23,13 @@ export let configFields: SomeCompanionConfigField[] = [
 		max: 3600,
 		default: 10,
 		width: 4,
+	},
+	{
+		type: 'dropdown',
+		id: 'cameraModel',
+		label: 'Camera Model',
+		width: 6,
+		default: 'komodo',
+		choices: CAMERA_MODEL_CHOICES,
 	},
 ]

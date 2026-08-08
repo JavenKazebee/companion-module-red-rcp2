@@ -23,6 +23,13 @@ Compatible with all RED cameras using the RCP2 protocol (DSMC3 line). Tested and
 
 - **IP address** — The camera’s IP address (from the camera’s Wi‑Fi/network screen). Must be on the same network as Companion.
 - **Reconnect attempt rate (seconds)** — How often the module retries if the connection is lost (1–3600 seconds, default: 10).
+- **Camera Model** — Which camera this instance is talking to (Komodo / Komodo-X / V-Raptor). Komodo and Komodo-X support the same set of parameters; V-Raptor supports some the others don't (and vice versa). Actions and variables are scoped to whichever model you pick, so choose the one that actually matches your camera.
+
+# Actions and variables
+
+Every action and variable in this module corresponds directly to a parameter documented in RED's own RCP2 API manuals, with the action/variable name matching RED's parameter name lowercased (e.g. the documented `EXPOSURE_ANGLE` parameter is the `exposure_angle` action and variable). If you're unsure what a specific action or variable does, RED's RCP2 API documentation (available from red.com) is the authoritative reference — search it for the parameter name in capitals.
+
+A few parameters don't map cleanly to a single action/variable and are handled separately: the `cdl_*` variables come from the camera's composite CDL report rather than an individual parameter, and the **Generic** action lets you send any RCP2 command id/argument directly, for anything not otherwise covered.
 
 # Troubleshooting
 

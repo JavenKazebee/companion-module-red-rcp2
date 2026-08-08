@@ -1,16 +1,17 @@
 {
 	"name": "companion-module-red-rcp2",
-	"version": "1.0.0",
+	"version": "2.0.0",
 	"description": "",
 	"main": "./dist/index.js",
 	"author": "Javen Kazebee",
 	"license": "ISC",
 	"scripts": {
-		"format": "prettier -w ."
+		"format": "prettier -w .",
+		"generate:parameters": "node scripts/generate-parameters.mjs"
 	},
 	"dependencies": {
 		"@companion-module/base": "1.14.1",
-		"red-rcp2": "1.0.0",
+		"red-rcp2": "2.0.0",
 		"typescript": "5.9.3"
 	},
 	"devDependencies": {
