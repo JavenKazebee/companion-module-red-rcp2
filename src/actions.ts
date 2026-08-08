@@ -50,6 +50,7 @@ function makeListAction(self: ModuleInstance, def: ParameterDef): CompanionActio
 				self.cameraSet(def.id, value as number | string)
 			}
 		},
+		optionsToMonitorForSubscribe: [],
 		subscribe: () => {
 			self.cameraGetList(def.id)
 		},
@@ -119,7 +120,7 @@ function makeValueAction(self: ModuleInstance, def: ParameterDef): CompanionActi
 function makeTriggerAction(self: ModuleInstance, def: ParameterDef): CompanionActionDefinition {
 	return {
 		name: def.label,
-		options: [{ id: 'val', type: 'textinput', label: 'Value', default: '', required: false, useVariables: true }],
+		options: [{ id: 'val', type: 'textinput', label: 'Value', default: '', useVariables: true }],
 		callback: async (event) => {
 			const text = event.options.val?.toString() ?? ''
 			if (text === '') {
@@ -171,7 +172,6 @@ export default function updateActions(self: ModuleInstance): void {
 					type: 'textinput',
 					label: 'Argument',
 					default: '',
-					required: false,
 					useVariables: true,
 				},
 			],

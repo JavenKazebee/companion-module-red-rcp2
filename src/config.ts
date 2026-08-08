@@ -1,10 +1,15 @@
-import { Regex, SomeCompanionConfigField } from '@companion-module/base'
+import { Regex, SomeCompanionConfigField, type InstanceTypes } from '@companion-module/base'
 import { CAMERA_MODEL_CHOICES, CameraModel } from './parameters.js'
 
-export interface ModuleConfig {
+export type ModuleConfig = {
 	ip: string
 	reconnectRate: number
 	cameraModel: CameraModel
+}
+
+export interface ModuleSchema extends InstanceTypes {
+	config: ModuleConfig
+	secrets: undefined
 }
 
 export let configFields: SomeCompanionConfigField[] = [

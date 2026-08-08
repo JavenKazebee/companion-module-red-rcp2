@@ -3,6 +3,7 @@
 	"version": "2.0.0",
 	"description": "",
 	"main": "./dist/index.js",
+	"type": "module",
 	"author": "Javen Kazebee",
 	"license": "ISC",
 	"scripts": {
@@ -10,12 +11,14 @@
 		"generate:parameters": "node scripts/generate-parameters.mjs"
 	},
 	"dependencies": {
-		"@companion-module/base": "1.14.1",
+		"@companion-module/base": "2.1.2",
 		"red-rcp2": "2.0.0",
-		"typescript": "5.9.3"
+		"typescript": "7.0.2"
 	},
 	"devDependencies": {
-		"@companion-module/tools": "2.6.1",
+		"@companion-module/tools": "3.0.2",
+		"@types/node": "26.2.0",
+		"@types/ws": "8.18.1",
 		"prettier": "^3.8.1"
 	},
 	"packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610",

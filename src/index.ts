@@ -1,19 +1,12 @@
-import {
-	InstanceBase,
-	InstanceStatus,
-	runEntrypoint,
-	SomeCompanionConfigField,
-	DropdownChoice,
-} from '@companion-module/base'
-import { configFields, ModuleConfig } from './config.js'
+import { InstanceBase, InstanceStatus, SomeCompanionConfigField, DropdownChoice } from '@companion-module/base'
+import { configFields, ModuleConfig, ModuleSchema } from './config.js'
 import updateActions from './actions.js'
 import updateVariableDefinitions from './variables.js'
-import { upgradeScripts } from './upgrade.js'
 import { Camera, Types } from 'red-rcp2'
 import DropdownOptions from './options.js'
 import { PARAMETERS, PARAMETERS_BY_ID } from './parameters.js'
 
-export default class ModuleInstance extends InstanceBase<ModuleConfig> {
+export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 	config!: ModuleConfig
 	camera: Camera | null = null
 	options: DropdownOptions = new DropdownOptions()
@@ -255,4 +248,4 @@ export default class ModuleInstance extends InstanceBase<ModuleConfig> {
 	}
 }
 
-runEntrypoint(ModuleInstance, upgradeScripts)
+export { UpgradeScripts } from './upgrade.js'
