@@ -12,7 +12,7 @@
 	},
 	"dependencies": {
 		"@companion-module/base": "2.1.2",
-		"red-rcp2": "2.0.0",
+		"red-rcp2": "2.0.1",
 		"typescript": "7.0.2"
 	},
 	"devDependencies": {
