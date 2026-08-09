@@ -11,6 +11,7 @@ export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 	camera: Camera | null = null
 	options: DropdownOptions = new DropdownOptions()
 	reconnectTimer: NodeJS.Timeout | null = null
+	private connecting = false
 
 	constructor(internal: unknown) {
 		super(internal)
@@ -21,7 +22,7 @@ export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 
 		// If connection fails, periodically attempt to reconnect
 		if (!(await this.attemptConnection())) {
-			this.reconnectUntilConnected()
+			this.scheduleReconnect()
 		}
 
 		// Initialize actions and variables
@@ -31,13 +32,14 @@ export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 
 	async destroy(): Promise<void> {
 		this.teardownCamera()
-		clearTimeout(this.reconnectTimer as NodeJS.Timeout)
+		this.clearReconnectTimer()
 	}
 
 	async configUpdated(config: ModuleConfig): Promise<void> {
 		// If the IP has changed, clear the camera, update the ip, and re-connect
 		if (this.config.ip != config.ip) {
 			this.teardownCamera()
+			this.clearReconnectTimer()
 			this.config.ip = config.ip
 			this.attemptConnection()
 		}
@@ -46,10 +48,9 @@ export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 		if (this.config.reconnectRate != config.reconnectRate) {
 			this.config.reconnectRate = config.reconnectRate
 			if (this.reconnectTimer) {
-				clearTimeout(this.reconnectTimer as NodeJS.Timeout)
-				this.reconnectTimer = null
+				this.clearReconnectTimer()
+				this.scheduleReconnect()
 			}
-			this.reconnectUntilConnected()
 		}
 
 		// If the camera model has changed, regenerate actions/variables and re-fetch under the new scope
@@ -79,13 +80,15 @@ export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 	}
 
 	async attemptConnection(): Promise<boolean> {
-		return new Promise(async (resolve) => {
+		if (this.connecting) return false
+		this.connecting = true
+
+		try {
 			this.log('info', 'Attempting connection to ' + this.config.ip)
 			// If the ip field is empty, return
 			if (this.config.ip == '') {
 				this.log('info', 'IP field empty.')
-				resolve(false)
-				return
+				return false
 			}
 
 			this.updateStatus(InstanceStatus.Connecting)
@@ -94,14 +97,14 @@ export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 				this.camera = await new Camera('Companion', this.config.ip).connect()
 				this.log('info', 'Camera found!')
 
-				this.camera.on('message', (data) => {
+				this.camera.on('message', (data: Types.RCPMessage) => {
 					this.messageHandler(data)
 				})
 
 				this.camera.on('close', () => {
 					this.updateStatus(InstanceStatus.Disconnected)
 					this.camera = null
-					this.reconnectUntilConnected()
+					this.scheduleReconnect()
 				})
 
 				this.subscribeActions()
@@ -109,18 +112,21 @@ export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 				this.camera.getParameters()
 				this.updateStatus(InstanceStatus.Ok)
 
-				resolve(true)
-			} catch (e: any) {
-				this.log('info', 'Connection failed: ' + e.message)
-				if (e.code == 'EHOSTDOWN') {
+				return true
+			} catch (e: unknown) {
+				const message = e instanceof Error ? e.message : String(e)
+				this.log('info', 'Connection failed: ' + message)
+				if ((e as { code?: string })?.code === 'EHOSTDOWN') {
 					this.updateStatus(InstanceStatus.Disconnected)
 				} else {
 					this.updateStatus(InstanceStatus.ConnectionFailure)
 					this.log('error', 'Camera connection failed')
 				}
-				resolve(false)
+				return false
 			}
-		})
+		} finally {
+			this.connecting = false
+		}
 	}
 
 	private teardownCamera(): void {
@@ -135,8 +141,9 @@ export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 		if (!this.camera) return
 		try {
 			this.camera.get(...args)
-		} catch (e: any) {
-			this.log('debug', `Camera get failed (${args[0]}): ${e.message}`)
+		} catch (e: unknown) {
+			const message = e instanceof Error ? e.message : String(e)
+			this.log('debug', `Camera get failed (${args[0]}): ${message}`)
 		}
 	}
 
@@ -144,8 +151,9 @@ export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 		if (!this.camera) return
 		try {
 			this.camera.getList(...args)
-		} catch (e: any) {
-			this.log('debug', `Camera getList failed (${args[0]}): ${e.message}`)
+		} catch (e: unknown) {
+			const message = e instanceof Error ? e.message : String(e)
+			this.log('debug', `Camera getList failed (${args[0]}): ${message}`)
 		}
 	}
 
@@ -153,27 +161,28 @@ export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 		if (!this.camera) return
 		try {
 			this.camera.set(...args)
-		} catch (e: any) {
-			this.log('debug', `Camera set failed (${args[0]}): ${e.message}`)
+		} catch (e: unknown) {
+			const message = e instanceof Error ? e.message : String(e)
+			this.log('debug', `Camera set failed (${args[0]}): ${message}`)
 		}
 	}
 
-	messageHandler(data: any) {
+	messageHandler(data: Types.RCPMessage) {
 		switch (data.type) {
 			case 'rcp_cur_list':
-				this.handleList(data)
+				this.handleList(data as Types.CurList)
 				break
 			case 'rcp_cur_int':
-				this.handleCurInt(data)
+				this.handleCurInt(data as Types.CurInt)
 				break
 			case 'rcp_cur_str':
-				this.handleCurStr(data)
+				this.handleCurStr(data as Types.CurStr)
 				break
 			case 'rcp_cur_cdl':
-				this.handleCurCDL(data)
+				this.handleCurCDL(data as Types.CurCdl)
 				break
 			case 'rcp_cur_parameters':
-				this.handleCurParameters(data)
+				this.handleCurParameters(data as Types.CurParameters)
 				break
 		}
 	}
@@ -233,18 +242,26 @@ export default class ModuleInstance extends InstanceBase<ModuleSchema> {
 		}
 	}
 
-	async reconnectUntilConnected() {
+	scheduleReconnect(): void {
+		// Don't stack a second timer on top of one that's already pending
+		if (this.reconnectTimer) return
+
 		this.log('info', 'Setting up reconnect timer.')
-		// Create interval
 		this.reconnectTimer = setInterval(async () => {
 			// Attempt to reconnect
 			if (await this.attemptConnection()) {
 				this.log('info', 'Reconnection successful.')
 				// If successful, clear interval
-				clearInterval(this.reconnectTimer as NodeJS.Timeout)
-				this.reconnectTimer = null
+				this.clearReconnectTimer()
 			}
 		}, 1000 * this.config.reconnectRate)
+	}
+
+	private clearReconnectTimer(): void {
+		if (this.reconnectTimer) {
+			clearInterval(this.reconnectTimer)
+			this.reconnectTimer = null
+		}
 	}
 }
 
